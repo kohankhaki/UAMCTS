@@ -68,9 +68,6 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                     'layers_features':config.u_layers_features,
                     'training':config.u_training}
 
-
-
-        
         self._sr = dict(network=None,
                         layers_type=[],
                         layers_features=[],
@@ -93,7 +90,10 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
         self.keep_subtree = False
         self.keep_tree = False
         self.root = None
-        self.tau = params['tau']
+        self.max_tau = params['tau']
+        self.min_tau = 0.1
+        self.tau = self.max_tau
+        self.u_has_trained = False
 
     def start(self, observation, info=None):
         '''
@@ -101,6 +101,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
         :return: action : numpy array
         '''
         self.episode_counter += 1
+
         if self._sr['network'] is None:
             self.init_s_representation_network(observation)
 
@@ -134,6 +135,8 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
 
     def step(self, reward, observation, info=None):
         self.time_step += 1
+        # print(self.time_step)
+
         self.state = self.getStateRepresentation(observation)
         if not self.keep_subtree:
             self.subtree_node = Node(None, self.state)
@@ -147,7 +150,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
         self.subtree_node = sub_tree
         self.action = torch.tensor([action_index]).unsqueeze(0)
         reward = torch.tensor([reward], device=self.device)
-        if self._uf['training'] and self.time_step in self.u_training_steps:
+        if self._uf['training']:
             a = torch.tensor(self.action_list[self.prev_action.item()], device=self.device).unsqueeze(0)
             corrupted_state, _, _, _ = self.model(self.prev_state, a)
             onehot_prev_state = self.get_onehot_state(self.prev_state)
@@ -155,6 +158,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                                                             self.getActionOnehotTorch(self.prev_action),
                                                             self.state,
                                                             corrupted_state))
+        if self._uf['training'] and self.time_step in self.u_training_steps:
             self.train_uncertainty()
 
         self.updateStateRepresentation()
@@ -164,8 +168,10 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
 
     def end(self, reward):
         self.time_step += 1
+        # print(self.time_step)
+
         reward = torch.tensor([reward], device=self.device)
-        if self._uf['training'] and self.time_step in self.u_training_steps:
+        if self._uf['training']:
             a = torch.tensor(self.action_list[self.prev_action.item()], device=self.device).unsqueeze(0)
             true_next_state, _, _ = self.true_model(self.prev_state[0], a[0])
             corrupted_state, _, _, _ = self.model(self.prev_state, a)
@@ -174,6 +180,8 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                                                             self.getActionOnehotTorch(self.prev_action),
                                                             self.getStateRepresentation(true_next_state),
                                                             corrupted_state))
+        
+        if self._uf['training'] and self.time_step in self.u_training_steps:
             self.train_uncertainty()
    
     def init_uncertainty_network(self, state):
@@ -204,15 +212,27 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
         return max_action_list[random_ind], max_child_list[random_ind]
 
     def train_uncertainty(self):
-        if len(self.uncertainty_buffer) <  max(self.minimum_uncertainty_buffer_training, self._uf['batch_size']):
+        print(self.tau)
+        if self.u_has_trained:
+            return
+        print('len buffer:' , len(self.uncertainty_buffer))
+        if len(self.uncertainty_buffer) < max(self.minimum_uncertainty_buffer_training, self._uf['batch_size']):
             return
         loss_sum = 0
         for _ in range(self.u_epoch_training):
             corrupt_transition_batch = random.sample(self.uncertainty_buffer, k=self._uf['batch_size'])
             loss = self.training_step_uncertainty(corrupt_transition_batch) 
+            # print(loss)
             loss_sum += loss
+        # self.u_has_trained = True
+        self.tau /= 10
+        self.u_epoch_training = self.u_epoch_training // 5
+        if self.tau <= self.min_tau:
+           self.tau = self.min_tau
+           self.u_has_trained = True
         print("loss ", self.episode_counter, ", buffer ", len(self.uncertainty_buffer), ":", 
         loss_sum / (self.u_epoch_training))
+        # exit(0)
 
     def training_step_uncertainty(self, corrupt_transition_batch):
         batch = utils.corrupt_transition(*zip(*corrupt_transition_batch))
@@ -231,9 +251,11 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
     
     def get_onehot_state(self, state):
         if self.env == "space_invaders":
-            prev_state_pos_onehot = self.getOnehotTorch(torch.tensor([state[0][-6]], dtype=int).unsqueeze(0), 10)
-            prev_state_shottimer_onehot = self.getOnehotTorch(torch.tensor([state[0][-1]], dtype=int).unsqueeze(0), 5)
-            one_hot_prev_state = torch.cat((state[0][0:-6], state[0][-5:-1])).unsqueeze(0)
+            state_copy = torch.clone(state)
+            state_copy = state_copy.int()
+            prev_state_pos_onehot = self.getOnehotTorch(torch.tensor([state_copy[0][-6]], dtype=int).unsqueeze(0), 10)
+            prev_state_shottimer_onehot = self.getOnehotTorch(torch.tensor([state_copy[0][-1]], dtype=int).unsqueeze(0), 5)
+            one_hot_prev_state = torch.cat((state_copy[0][0:-6], state_copy[0][-5:-1])).unsqueeze(0)
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_pos_onehot), dim=1)
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_shottimer_onehot), dim=1)
             
@@ -258,14 +280,16 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
 
             # one_hot_prev_state = self.getOnehotTorch(torch.tensor([state_copy[0][-2]], dtype=int).unsqueeze(0), 10)
         elif self.env == "breakout":
-            prev_state_ball_y = self.getOnehotTorch(torch.tensor([state[0][0]], dtype=int).unsqueeze(0), 10)
-            prev_state_ball_x = self.getOnehotTorch(torch.tensor([state[0][1]], dtype=int).unsqueeze(0), 10)
-            prev_state_ball_dir = self.getOnehotTorch(torch.tensor([state[0][2]], dtype=int).unsqueeze(0), 4)
-            prev_state_last_x = self.getOnehotTorch(torch.tensor([state[0][5]], dtype=int).unsqueeze(0), 10)
-            prev_state_last_y = self.getOnehotTorch(torch.tensor([state[0][6]], dtype=int).unsqueeze(0), 10)
-            prev_state_pos = self.getOnehotTorch(torch.tensor([state[0][3]], dtype=int).unsqueeze(0), 10)
+            state_copy = torch.clone(state)
+            state_copy = state_copy.int()
+            prev_state_ball_y = self.getOnehotTorch(torch.tensor([state_copy[0][0]], dtype=int).unsqueeze(0), 10)
+            prev_state_ball_x = self.getOnehotTorch(torch.tensor([state_copy[0][1]], dtype=int).unsqueeze(0), 10)
+            prev_state_ball_dir = self.getOnehotTorch(torch.tensor([state_copy[0][2]], dtype=int).unsqueeze(0), 4)
+            prev_state_last_x = self.getOnehotTorch(torch.tensor([state_copy[0][5]], dtype=int).unsqueeze(0), 10)
+            prev_state_last_y = self.getOnehotTorch(torch.tensor([state_copy[0][6]], dtype=int).unsqueeze(0), 10)
+            prev_state_pos = self.getOnehotTorch(torch.tensor([state_copy[0][3]], dtype=int).unsqueeze(0), 10)
 
-            one_hot_prev_state = torch.cat((state[0][4].unsqueeze(0), state[0][7:])).unsqueeze(0)
+            one_hot_prev_state = torch.cat((state_copy[0][4].unsqueeze(0), state_copy[0][7:])).unsqueeze(0)
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_ball_y), dim=1)
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_ball_x), dim=1)
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_ball_dir), dim=1)
@@ -441,7 +465,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
             while len(selected_node.get_childs()) > 0:
                 max_uct_value = -np.inf
                 child_values = list(
-                    map(lambda n: n.get_weighted_avg_value() + n.reward_from_par, selected_node.get_childs()))
+                    map(lambda n: n.get_weighted_avg_value(self.tau) + n.reward_from_par, selected_node.get_childs()))
                 max_child_value = max(child_values)
                 min_child_value = min(child_values)
 
@@ -524,17 +548,17 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                 action = torch.tensor(a).unsqueeze(0)
                 next_state, is_terminal, reward, uncertainty = self.model(node.get_state(),
                                                                           action)  # with the assumption of deterministic model
-                # if np.array_equal(next_state, node.get_state()):
-                #     continue
                 value = self.get_initial_value(next_state)
                 child = Node(node, next_state, is_terminal=is_terminal, action_from_par=a, reward_from_par=reward,
                              value=value, uncertainty=uncertainty.item())
                 uncertainty_list.append(uncertainty)
                 possible_children.append(child)
             uncertainty_list = np.asarray(uncertainty_list)
-            norm_uncertainties = uncertainty_list / np.sum(uncertainty_list)
+            norm_uncertainties = uncertainty_list
+            if np.sum(uncertainty_list) != 0:
+                norm_uncertainties /= np.sum(uncertainty_list)
             excluded_child = None
-            if np.random.rand() < (1 - self.tau) and np.sum(uncertainty_list) != 0:
+            if np.random.rand() < (1 - self.tau/10) and np.sum(uncertainty_list) != 0:
                 excluded_child = np.random.choice(len(possible_children), p=norm_uncertainties)
             for i, child in enumerate(possible_children):
                 if i != excluded_child:
@@ -578,7 +602,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
         output = onehot torch
         '''
         batch_size = index.shape[0]
-        onehot = torch.zeros([batch_size, num_actions], device="cpu")
+        onehot = torch.zeros([batch_size, num_actions], device=self.device)
         onehot.scatter_(1, index, 1)
         return onehot
 
