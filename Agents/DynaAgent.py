@@ -352,7 +352,6 @@ class DynaAgent(BaseAgent):
         batch_size = action.shape[0]
         num_actions = len(self.action_list)
         onehot = torch.zeros([batch_size, num_actions], device=self.device)
-        # onehot.zero_()
         onehot.scatter_(1, action, 1)
         return onehot
 

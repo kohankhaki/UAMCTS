@@ -7,7 +7,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 import random
 from torch.utils.tensorboard import SummaryWriter
-import torchvision
 
 # from Datasets.TransitionDataGrid import data_store
 import utils
@@ -123,6 +122,58 @@ class StateTransitionModelHeter(nn.Module):
         return mu_head, var_head
 
 class UncertaintyNN(nn.Module):
+    def __init__(self, state_shape, action_shape, layers_type, layers_features):
+        # state : B, state_size(linear)
+        # action: A
+        super(UncertaintyNN, self).__init__()
+        self.layers_type = layers_type
+        self.layers = []
+        state_size = state_shape[1]
+        action_size = action_shape
+
+        for i, layer in enumerate(layers_type):
+            if layer == 'conv':
+                raise NotImplemented("convolutional layer is not implemented")
+            elif layer == 'fc':
+                if i == 0:
+                    linear_input_size = state_size + action_size
+                    layer = nn.Linear(linear_input_size, layers_features[i])
+                else:
+                    layer = nn.Linear(layers_features[i - 1] + action_size, layers_features[i])
+                self.add_module('hidden_layer_' + str(i), layer)
+                self.layers.append(layer)
+            else:
+                raise ValueError("layer is not defined")
+        if len(layers_type) > 0:
+            self.head = nn.Linear(layers_features[-1], 1)
+        else:
+            self.head = nn.Linear(state_size + action_size, 1)
+
+    def forward(self, state, action):
+        x = None
+        for i, layer in enumerate(self.layers_type):
+            if layer == 'conv':
+                raise NotImplemented("convolutional layer is not implemented")
+            elif layer == 'fc':
+                if i == 0:
+                    x = state.flatten(start_dim= 1)
+                a = action.flatten(start_dim=1)
+                x = torch.cat((x.float(), a.float()), dim=1)
+                x = self.layers[i](x.float())
+                x = torch.tanh(x)
+            else:
+                raise ValueError("layer is not defined")
+        if len(self.layers_type) > 0:
+            head = torch.sigmoid(self.head(x.float()))
+        else:
+            x = state.flatten(start_dim= 1)
+            a = action.flatten(start_dim=1)
+            x = torch.cat((x.float(), a.float()), dim=1)
+            head = torch.sigmoid(self.head(x.float()))
+        return head
+
+
+class UncertaintyNN2(nn.Module):
     def __init__(self, state_shape, action_shape, layers_type, layers_features):
         # state : B, state_size(linear)
         # action: A

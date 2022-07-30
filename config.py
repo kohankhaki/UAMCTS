@@ -261,25 +261,13 @@ experiment_detail = ""
 
 index = 9
 
-test = False
-if test:
-    result_file_name = "Test"
-else:
-    # result_file_name = "SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=5_E=N_S=N_B=N_TrainedUncertainty_B1000_ParameterStudy_I"+str(index)
-    result_file_name = "Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_"
-    # result_file_name = "Breakout_CorruptedStates=[2, 4]_MCTS_R=N_E=2_S=N_B=N_TrainedUncertainty_B1000_ParameterStudy_I"+str(index)
-    # result_file_name = "TwoWayGridWorld_CorruptedStates=[3]_MCTS_BootstrapDQNValue_Offline_ParameterStudy_run1"
-
-    # result_file_name = "SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_PreTrainedDQN_E20000_64x64_ParameterStudy_run1"
-    # result_file_name = "Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_PreTrainedDQN_E30000_64x64_ParameterStudy_run1"
-    # result_file_name = "Breakout_CorruptedStates=[2, 4]_PreTrainedDQN_E20000_64x64_ParameterStudy_run1"
 
 # agent
-rollout_idea = None # None, 1, 5
-selection_idea = None  # None, 1
-backpropagate_idea = None  # None, 1
-expansion_idea = 2 # None, 2, #1
-pre_gathered_buffer = None # freeway_buffer[index // 3]
+rollout_idea = 5 # None, 1, 5
+selection_idea = 1  # None, 1
+backpropagate_idea = 1  # None, 1
+expansion_idea = 2 # None, 2,
+pre_gathered_buffer = None #'l=4954_e=299__r=0_Freeway_SemiOnlineUAMCTS_R=N_E=2_S=N_B=N_AdaptiveTau=10_5000_5000_Run9' # freeway_buffer[index // 3]
 # load_vf = ["Results/ValueFunction/Space_Invaders_Run1_64x64_VF.p", 
 #            "Results/ValueFunction/freeway_Run1_64x64_VF.p",
 #            "Results/ValueFunction/breakout_Run1_64x64_VF.p"][0]
@@ -289,26 +277,35 @@ pre_gathered_buffer = None # freeway_buffer[index // 3]
 trained_vf_list = [None]#["Results/ValueFunction/breakout_run"+str(i)+"_E20000_64x64_VF.p" for i in range(30)]
 # Uncertainty
 
-minimum_uncertainty_buffer_training = 1000
+# # experiment
+num_runs = 3
+num_episode = 1000 #spc=300 frw=1000
+max_step_each_episode = 300
+
 u_batch_size = 32
+minimum_uncertainty_buffer_training = u_batch_size
 u_step_size = 0.001
 u_layers_type = ['fc', 'fc']
-u_layers_features = [32, 32]
+u_layers_features = [128, 128]
 u_training = True
 u_epoch_training = 5000
-u_training_steps = [1000 * i for i in range(1000)]
+u_epoch_training_rate = 5000
+
+#v1 128 128 128 128 - 5k -5k
+#v2 128 128 - 5k - 5k
+#v3 128 128 - 3k - 5k
+#v4 128 64 - 5k - 5k
+
+
+
+u_training_steps = [u_epoch_training_rate * i for i in range(num_episode * max_step_each_episode // u_epoch_training_rate)]
 
 # u_pretrained_u_network = freeway_uncertainty_1000[index]
-u_pretrained_u_network = None
+u_pretrained_u_network = None #'/home/farnaz/UAMCTS/PretrainedUncertaintyModels/uf128-5' #"/home/farnaz/UAMCTS/PretrainedUncertaintyModels/UAMCTS(E)_Tau=10_r0_b=4710_e=3000.p"
 use_perfect_uncertainty = False
 
 #environment
 env_name = "freeway" #freeway, breakout, space_invaders
-
-# # experiment
-num_runs = 10
-num_episode = 500
-max_step_each_episode = 300
 
 # c_list = [2 ** -1, 2 ** 0, 2 ** 0.5, 2 ** 1]
 c_list = [2 ** 0.5] #space_invaders=2**0, freeway=2**0.5, breakout=2**0.5
@@ -316,8 +313,27 @@ c_list = [2 ** 0.5] #space_invaders=2**0, freeway=2**0.5, breakout=2**0.5
 num_iteration_list = [100] #[10] [100]
 simulation_depth_list = [50] #[20] [50]
 num_simulation_list = [10] #[10] 
-# tau_list = [0.1, 0.5, 0.9]
-tau_list = [0.1] #space_invaders=0.1, freeway=0.1, breakout=0.1 0.5
-
+# tau_list = [0.1] #space_invaders=0.1, freeway=0.1, breakout=0.1 0.5
+tau_list = [10]
 save_uncertainty_buffer = True
+
+
+
+test = False
+if test:
+    result_file_name = "t"
+else:
+    # result_file_name = "SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=5_E=N_S=N_B=N_TrainedUncertainty_B1000_ParameterStudy_I"+str(index)
+    # result_file_name = "SpaceInvaders_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run4"
+    # result_file_name = "Freeway_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run11"
+    result_file_name = "1_Freeway_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run3"
+    # result_file_name = "1_SpaceInvaders_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run1"
+    # result_file_name = "Freeway_MCTS_Run9"
+    # result_file_name = "TestTau_Freeway_SemiOnlineUAMCTS_R=N_E=2_S=N_B=N_" + str(tau_list[0])
+    # result_file_name = "Breakout_CorruptedStates=[2, 4]_MCTS_R=N_E=2_S=N_B=N_TrainedUncertainty_B1000_ParameterStudy_I"+str(index)
+    # result_file_name = "TwoWayGridWorld_CorruptedStates=[3]_MCTS_BootstrapDQNValue_Offline_ParameterStudy_run1"
+
+    # result_file_name = "SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_PreTrainedDQN_E20000_64x64_ParameterStudy_run1"
+    # result_file_name = "Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_PreTrainedDQN_E30000_64x64_ParameterStudy_run1"
+    # result_file_name = "Breakout_CorruptedStates=[2, 4]_PreTrainedDQN_E20000_64x64_ParameterStudy_run1"
 

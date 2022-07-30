@@ -252,18 +252,26 @@ class RunExperiment():
                     experiment.runEpisode(max_step_each_episode)
                     self.num_steps_run_list[i, r, e] = experiment.num_steps
                     self.rewards_run_list[i, r, e] = experiment.total_reward
-                
-            if save_uncertainty_buffer:
-                agent.save_uncertainty_buffer("l=" + str(len(agent.uncertainty_buffer)) + "_e=" + str(e)+"_"+"_r=" + str(r)+ "_" + result_file_name)
+
+                    if e % 100 == 99:
+                        if save_uncertainty_buffer:
+                            agent.save_uncertainty_buffer("l=" + str(len(agent.uncertainty_buffer)) + "_e=" + str(e)+"_"+"_r=" + str(r)+ "_" + result_file_name)
+                        with open("Results/" + result_file_name + '.p', 'wb') as f:
+                            result = {'num_steps': self.num_steps_run_list,
+                                    'rewards': self.rewards_run_list, 
+                                    'experiment_objs': experiment_object_list,
+                                    'detail': detail,}
+                            pickle.dump(result, f)
+                        f.close()
             with open("Results/" + result_file_name + '.p', 'wb') as f:
                 result = {'num_steps': self.num_steps_run_list,
                         'rewards': self.rewards_run_list, 
                         'experiment_objs': experiment_object_list,
                         'detail': detail,}
                 pickle.dump(result, f)
-            f.close()
-    
-    def show_multiple_experiment_result_paper(self, results_file_name_list, exp_names):
+            f.close()    
+            
+    def show_multiple_experiment_result_paper(self, results_file_name_list, exp_names, plot_name):
         def find_best_c(num_steps, experiment_objs):
             removed_list = []
             num_steps_avg = np.mean(num_steps, axis=1)
@@ -337,7 +345,7 @@ class RunExperiment():
                 for j in range(runs.shape[1] - s):
                     smooth_runs[i, j] = np.mean(runs[i, j: j + s])
             return smooth_runs
-        def offline():
+        def offline(plot_name):
             if len(results_file_name_list) != len(exp_names):
                 print("experiments and names won't match", len(results_file_name_list), len(exp_names))
                 return None
@@ -352,12 +360,7 @@ class RunExperiment():
             for i in range(len(results_file_name_list)):
                 result_file_name = results_file_name_list[i]
                 exp_name = exp_names[i]
-                # print(exp_name)
-                print(result_file_name)
-                # print(exp_name)
-                # exit(0)
                 result = combine_experiment_result(result_file_name)
-                print("reward shape:", result['rewards'].shape, " --- exp:" ,exp_name)
                 rewards, experiment_objs = result['rewards'], result['experiment_objs']
                 rewards, experiment_objs = find_best_c(rewards, experiment_objs)
                 rewards, experiment_objs = find_best_tau(rewards, experiment_objs)
@@ -448,8 +451,8 @@ class RunExperiment():
             # fig_test.savefig("UAMCTS-Plots/UAMCTS_Online_Freeway"+".png", format="png")
             # fig_test.savefig("UAMCTS-Plots/UAMCTS_Online_Freeway"+".svg", format="svg")
 
-            fig_test.savefig("UAMCTS-Plots/tmp"+".png", format="png")
-            fig_test.savefig("UAMCTS-Plots/tmp"+".svg", format="svg")
+            fig_test.savefig(plot_name+".png", format="png")
+            # fig_test.savefig("Results/UAMCTS-Plots/tmp"+".svg", format="svg")
 
             # fig_test.savefig("UAMCTS-Plots/UAMCTS_Offline_Breakout"+".png", format="png")
             # fig_test.savefig("UAMCTS-Plots/UAMCTS_Offline_Breakout"+".svg", format="svg")
@@ -468,9 +471,9 @@ class RunExperiment():
             #         # print(r, avg_rewards_list[i], std_rewards_list[i])
             #         if avg_rewards_list[i] - std_rewards_list[i]<= r <= avg_rewards_list[i] + std_rewards_list[i]:
             #             counter += 1
-            #     print(name_list[i], counter / len(reward_list[0]))
-            
-        def online():
+            #     print(name_list[i], counter / len(reward_list[0]))         
+        def online(plot_name):
+            print(results_file_name_list)
             if len(results_file_name_list) != len(exp_names):
                 print("experiments and names won't match", len(results_file_name_list), len(exp_names))
                 return None
@@ -483,7 +486,14 @@ class RunExperiment():
                 result_file_name = results_file_name_list[i]
                 exp_name = exp_names[i]
                 result = combine_experiment_result(result_file_name)
-                # print("reward shape:", result['rewards'].shape)
+                
+                print("reward shape:", result['rewards'].shape)
+                # result['rewards'] = result['rewards'][:,:,1700:2000]
+                # result['rewards'].reshape()
+                print("reward shape:", result['rewards'].shape)
+                print("mean", np.mean(result['rewards'][:,:,800:1000]))
+                print(np.average(result['rewards']))
+                # exit(0)
                 rewards, experiment_objs = result['rewards'], result['experiment_objs']
                 rewards, experiment_objs = find_best_c(rewards, experiment_objs)
                 rewards, experiment_objs = find_best_tau(rewards, experiment_objs)
@@ -503,7 +513,7 @@ class RunExperiment():
                 #             tmp = np.array([rewards[0, i]])
                 #             done_rewrads = np.concatenate([done_rewrads, tmp], axis=0)
                 # rewards = np.array([done_rewrads[:, :120]])
-                # rewards = np.array([make_smooth(rewards[0])])
+                rewards = np.array([make_smooth(rewards[0], s=50)])
                 # print(rewards.shape)
 
                 names = experiment_obj_to_name(experiment_objs)
@@ -535,7 +545,7 @@ class RunExperiment():
         
 
             axs_test.legend()
-            fig_test.savefig("online_test"+".png", format="png")
+            fig_test.savefig(plot_name + ".png", format="png")
 
         def pretrained_online():
             space = "MinAtarResult/Paper/SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=N_E=N_S=N_B=N_Buffer_run1.p"
@@ -547,7 +557,7 @@ class RunExperiment():
             with open(breakout, 'rb') as f:
                 mcts_result = pickle.load(f)
                 mcts_reward = mcts_result['rewards']
-                mcts_reward = np.array([make_smooth(mcts_reward[0], s=10)])
+                mcts_reward = np.array([make_smooth(mcts_reward[0], s=50)])
                 # print(mcts_reward.shape)
                 done_rewrads = None
                 for i in range(mcts_reward.shape[1]):
@@ -649,8 +659,8 @@ class RunExperiment():
             # fig_test.savefig("Freeway_TrainedUncertainty_Performance_Correct"+".svg", format="svg")
             fig_test.savefig("Breakout_TrainedUncertainty_Performance_Correct"+".svg", format="svg")
 
-        offline()
-        # online()
+        # offline(plot_name)
+        online(plot_name)
         # pretrained_online()
     def unpaired_t_test(self, result_file_name1, result_file_name2, names=['alg1', 'alg2']):
         def find_best_c(num_steps, experiment_objs):
