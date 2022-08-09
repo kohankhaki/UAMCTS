@@ -278,8 +278,8 @@ trained_vf_list = [None]#["Results/ValueFunction/breakout_run"+str(i)+"_E20000_6
 # Uncertainty
 
 # # experiment
-num_runs = 3
-num_episode = 1000 #spc=300 frw=1000
+num_runs = 1
+num_episode = 2000 #spc=300 frw=1500 brk=2000
 max_step_each_episode = 300
 
 u_batch_size = 32
@@ -305,7 +305,7 @@ u_pretrained_u_network = None #'/home/farnaz/UAMCTS/PretrainedUncertaintyModels/
 use_perfect_uncertainty = False
 
 #environment
-env_name = "freeway" #freeway, breakout, space_invaders
+env_name = "breakout" #freeway, breakout, space_invaders
 
 # c_list = [2 ** -1, 2 ** 0, 2 ** 0.5, 2 ** 1]
 c_list = [2 ** 0.5] #space_invaders=2**0, freeway=2**0.5, breakout=2**0.5
@@ -326,8 +326,9 @@ else:
     # result_file_name = "SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=5_E=N_S=N_B=N_TrainedUncertainty_B1000_ParameterStudy_I"+str(index)
     # result_file_name = "SpaceInvaders_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run4"
     # result_file_name = "Freeway_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run11"
-    result_file_name = "1_Freeway_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run3"
-    # result_file_name = "1_SpaceInvaders_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run1"
+    # result_file_name = "2_Freeway_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run4"
+    result_file_name = "3_Breakout_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run7"
+    # result_file_name = "2_SpaceInvaders_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run9"
     # result_file_name = "Freeway_MCTS_Run9"
     # result_file_name = "TestTau_Freeway_SemiOnlineUAMCTS_R=N_E=2_S=N_B=N_" + str(tau_list[0])
     # result_file_name = "Breakout_CorruptedStates=[2, 4]_MCTS_R=N_E=2_S=N_B=N_TrainedUncertainty_B1000_ParameterStudy_I"+str(index)
@@ -336,4 +337,3 @@ else:
     # result_file_name = "SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_PreTrainedDQN_E20000_64x64_ParameterStudy_run1"
     # result_file_name = "Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_PreTrainedDQN_E30000_64x64_ParameterStudy_run1"
     # result_file_name = "Breakout_CorruptedStates=[2, 4]_PreTrainedDQN_E20000_64x64_ParameterStudy_run1"
-

@@ -226,10 +226,12 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
             loss_sum += loss
         # self.u_has_trained = True
         self.tau /= 10
-        self.u_epoch_training = self.u_epoch_training // 5
-        if self.tau <= self.min_tau:
+        # self.u_epoch_training = self.u_epoch_training // 5
+        if self.tau < self.min_tau:
            self.tau = self.min_tau
            self.u_has_trained = True
+        if loss_sum / (self.u_epoch_training) > 10 ** -7:
+           self.u_has_trained = False           
         print("loss ", self.episode_counter, ", buffer ", len(self.uncertainty_buffer), ":", 
         loss_sum / (self.u_epoch_training))
         # exit(0)

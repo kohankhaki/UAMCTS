@@ -373,13 +373,14 @@ class RunExperiment():
                     experiment_objs = [experiment_objs[0]]
                     # print(rewards.shape)
 
+                # rewards = rewards.reshape((1, -1, 1))
+                print(rewards.shape)
                 for j in experiment_objs:
 
                     print(exp_names[i],": ","--C: ", round(j.c, 1), "--Tau: ", j.tau, "--AvgReward:", np.mean(rewards[0], axis=0))            
                     print('-------------------------------------------------------------')
                     print('-------------------------------------------------------------')
                     print('-------------------------------------------------------------')
-                # print(rewards.shape)
                 names = experiment_obj_to_name(experiment_objs)
                 for i, name in enumerate(names):
                     rewards_avg = np.mean(rewards[i], axis=0)
@@ -431,6 +432,7 @@ class RunExperiment():
                             std_rewards_list.append(np.std(rewards[i, :, 0]))
                             # reward_list.append(rewards[i, :, 0])
                             name_list.append(exp_name+name)
+                            print('h')
 
             # axs_test.set_xticklabels(name_list, rotation=20, fontsize=8)
             axs_test.scatter(y=avg_rewards_list, x=name_list, color="#256fba")
@@ -491,7 +493,7 @@ class RunExperiment():
                 # result['rewards'] = result['rewards'][:,:,1700:2000]
                 # result['rewards'].reshape()
                 print("reward shape:", result['rewards'].shape)
-                print("mean", np.mean(result['rewards'][:,:,800:1000]))
+                print("mean", np.mean(result['rewards'][:,:,1000:1150]))
                 print(np.average(result['rewards']))
                 # exit(0)
                 rewards, experiment_objs = result['rewards'], result['experiment_objs']
