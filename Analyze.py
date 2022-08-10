@@ -1,17 +1,36 @@
 
 from torch.functional import tensordot
-from Experiments.GridWorldExperiment import RunExperiment as GridWorld_RunExperiment
-from Experiments.TwoWayGridExperiment import RunExperiment as TwoWayGrid_RunExperiment
-from Experiments.MiniAtariExperiment import RunExperiment as MiniAtari_RunExperiment
+# from Experiments.GridWorldExperiment import RunExperiment as GridWorld_RunExperiment
+# from Experiments.TwoWayGridExperiment import RunExperiment as TwoWayGrid_RunExperiment
+from Experiments.MinAtarExperiment import RunExperiment as MinAtar_RunExperiment
 
-from Agents.ImperfectDQNMCTSAgentMiniAtari import *
+from Agents.ImperfectDQNMCTSAgentMinAtar import *
 
+def combine_runs(runs_list, result_name):
+    num_runs = len(runs_list)
+    combined_runs = []
+    num_episode = 0
+    for run in runs_list:
+        with open("Results/" + run, 'rb') as f:
+            run_result = pickle.load(f)
+            for i in range(run_result['rewards'][0].shape[0]):
+                combined_runs.append(run_result['rewards'][0][i])
+            num_episode = run_result['rewards'][0].shape[1]
+
+    combined_runs = np.array(combined_runs)
+    combined_runs = np.expand_dims(combined_runs, axis=0) 
+    
+    with open("Results/" + result_name + '.p', 'wb') as f:
+        result = run_result
+        result['rewards'] = combined_runs
+        pickle.dump(result, f)
+            
 
 
 
 if __name__ == '__main__':
 
-    experiment = MiniAtari_RunExperiment()
+    experiment = MinAtar_RunExperiment()
     # experiment = TwoWayGrid_RunExperiment()
 
 
@@ -118,7 +137,6 @@ if __name__ == '__main__':
         'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=4_E=1_S=N_B=N_PreTrainedDQN7k_64x64_Depth20_ParameterStudy_run1.p',
         'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=4_E=1_S=N_B=N_PreTrainedDQN20k_64x64_Depth20_ParameterStudy_run1.p',
     ]
-   
     results_DQMCTS_Freeway_D0 = [
         'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_PreTrainedDQN_E7000_64x64_ParameterStudy_run1.p',
         'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_PreTrainedDQN_E10000_64x64_ParameterStudy_run1.p',
@@ -199,7 +217,6 @@ if __name__ == '__main__':
         'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=4_E=1_S=N_B=N_PreTrainedDQN10k_64x64_Depth50_ParameterStudy_run1.p',
         'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=4_E=1_S=N_B=N_PreTrainedDQN20k_64x64_Depth50_ParameterStudy_run1.p',
     ]
-
     results_DQMCTS_Breakout_D0 = [
         'Breakout_CorruptedStates=[2, 4]_PreTrainedDQN_E7000_64x64_ParameterStudy_run1.p',
         'Breakout_CorruptedStates=[2, 4]_PreTrainedDQN_E10000_64x64_ParameterStudy_run1.p',
@@ -280,7 +297,6 @@ if __name__ == '__main__':
         'Breakout_CorruptedStates=[2, 4]_MCTS_R=4_E=1_S=N_B=N_PreTrainedDQN10k_64x64_Depth50_ParameterStudy_run1.p',
         'Breakout_CorruptedStates=[2, 4]_MCTS_R=4_E=1_S=N_B=N_PreTrainedDQN20k_64x64_Depth50_ParameterStudy_run1.p',
     ]
-
     results_MCTS_Space = [
         'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=N_E=N_S=N_B=N_Depth0_ParameterStudy_run1.p',
         'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=N_E=N_S=N_B=N_TrueModel_Depth0_ParameterStudy_run1.p',
@@ -297,7 +313,6 @@ if __name__ == '__main__':
         'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=N_E=N_S=N_B=N_Depth50_ParameterStudy_run1.p',
         'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=N_E=N_S=N_B=N_TrueModel_Depth50_ParameterStudy_run1.p',
     ]
-
     results_MCTS_Freeway = [
         'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=N_E=N_S=N_B=N_Depth0_ParameterStudy_run1.p',
         'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=N_E=N_S=N_B=N_TrueModel_Depth0_ParameterStudy_run1.p',
@@ -314,7 +329,6 @@ if __name__ == '__main__':
         'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=N_E=N_S=N_B=N_Depth50_ParameterStudy_run1.p',
         'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=N_E=N_S=N_B=N_TrueModel_Depth50_ParameterStudy_run1.p',
     ]
-
     results_MCTS_Breakout = [
         'Breakout_CorruptedStates=[2, 4]_MCTS_R=N_E=N_S=N_B=N_Depth0_ParameterStudy_run1.p',
         'Breakout_CorruptedStates=[2, 4]_MCTS_R=N_E=N_S=N_B=N_TrueModel_Depth0_ParameterStudy_run1.p',
@@ -331,36 +345,33 @@ if __name__ == '__main__':
         'Breakout_CorruptedStates=[2, 4]_MCTS_R=N_E=N_S=N_B=N_Depth50_ParameterStudy_run1.p',
         'Breakout_CorruptedStates=[2, 4]_MCTS_R=N_E=N_S=N_B=N_TrueModel_Depth50_ParameterStudy_run1.p',
     ]
-
     results_UAMCTS_Space_Offline=[
-        'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=N_E=N_S=N_B=N_Depth20_ParameterStudy_run1.p',
-        'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=N_E=N_S=N_B=N_TrueModel_Depth20_ParameterStudy_run1.p',
-
-        # 'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=5_E=2_S=1_B=1_TrueUncertainty_ParameterStudy_run1.p',
-        'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=N_E=2_S=N_B=N_TrueUncertainty_ParameterStudy_run1.p',
-        'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=5_E=N_S=N_B=N_TrueUncertainty_ParameterStudy_run1.p',
-        'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=5_E=2_S=1_B=1_TrueUncertainty_ParameterStudy_run1.p',
+        '1_SpaceInvaders_TrueMCTS',
+        '1_SpaceInvaders_CorruptedMCTS',
+        '1_SpaceInvaders_OfflineUAMCTS_R=N_E=N_S=1_B=N',
+        '1_SpaceInvaders_OfflineUAMCTS_R=N_E=2_S=N_B=N',
+        '1_SpaceInvaders_OfflineUAMCTS_R=5_E=N_S=N_B=N',
+        '1_SpaceInvaders_OfflineUAMCTS_R=N_E=N_S=N_B=1',
+        '1_SpaceInvaders_OfflineUAMCTS_R=5_E=2_S=1_B=1',
     ]
-
     results_UAMCTS_Freeway_Offline=[
-        'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=N_E=N_S=N_B=N_Depth50_ParameterStudy_run1.p',
-        'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=N_E=N_S=N_B=N_TrueModel_Depth50_ParameterStudy_run1.p',
-
-        # 'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=5_E=2_S=1_B=1_TrueUncertainty_ParameterStudy_run1.p',
-        'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=N_E=2_S=N_B=N_TrueUncertainty_ParameterStudy_run1.p',
-        'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=5_E=N_S=N_B=N_TrueUncertainty_ParameterStudy_run1.p',
-        'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=5_E=2_S=1_B=1_TrueUncertainty_ParameterStudy_run1.p',
+        '1_Freeway_TrueMCTS',
+        '2_Freeway_CorruptedMCTS',
+        '1_Freeway_OfflineUAMCTS_R=N_E=N_S=1_B=N',
+        '1_Freeway_OfflineUAMCTS_R=N_E=2_S=N_B=N',
+        '1_Freeway_OfflineUAMCTS_R=5_E=N_S=N_B=N',
+        '1_Freeway_OfflineUAMCTS_R=N_E=N_S=N_B=1',
+        '1_Freeway_OfflineUAMCTS_R=5_E=2_S=1_B=1',
     ]
     results_UAMCTS_Breakout_Offline=[
-        'Breakout_CorruptedStates=[2, 4]_MCTS_R=N_E=N_S=N_B=N_Depth50_ParameterStudy_run1.p',
-        'Breakout_CorruptedStates=[2, 4]_MCTS_R=N_E=N_S=N_B=N_TrueModel_Depth50_ParameterStudy_run1.p',
-        
-        # 'Breakout_CorruptedStates=[2, 4]_MCTS_R=5_E=2_S=1_B=1_TrueUncertainty_ParameterStudy_run1.p',
-        'Breakout_CorruptedStates=[2, 4]_MCTS_R=N_E=2_S=N_B=N_TrueUncertainty_ParameterStudy_run1.p',
-        'Breakout_CorruptedStates=[2, 4]_MCTS_R=5_E=N_S=N_B=N_TrueUncertainty_ParameterStudy_run1.p',
-        'Breakout_CorruptedStates=[2, 4]_MCTS_R=5_E=2_S=1_B=1_TrueUncertainty_ParameterStudy_run1.p',
+        '1_Breakout_TrueMCTS',
+        '1_Breakout_CorruptedMCTS',
+        '1_Breakout_OfflineUAMCTS_R=N_E=N_S=1_B=N',
+        '1_Breakout_OfflineUAMCTS_R=N_E=2_S=N_B=N',
+        '1_Breakout_OfflineUAMCTS_R=5_E=N_S=N_B=N',
+        '1_Breakout_OfflineUAMCTS_R=N_E=N_S=N_B=1',
+        '1_Breakout_OfflineUAMCTS_R=5_E=2_S=1_B=1',
     ]
-
     results_UAMCTS_Space_Online = [
         'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=N_E=N_S=N_B=N_Depth20_ParameterStudy_run1.p',
         'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=N_E=N_S=N_B=N_TrueModel_Depth20_ParameterStudy_run1.p',
@@ -381,7 +392,6 @@ if __name__ == '__main__':
         'SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=5_E=2_S=1_B=1_TrainedUncertainty_B7000_ParameterStudy',
 
     ]
-
     results_UAMCTS_Freeway_Online = [
         'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=N_E=N_S=N_B=N_Depth50_ParameterStudy_run1.p',
         'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=N_E=N_S=N_B=N_TrueModel_Depth50_ParameterStudy_run1.p',
@@ -402,9 +412,6 @@ if __name__ == '__main__':
         'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=N_E=2_S=N_B=N_TrainedUncertainty_B7000_ParameterStudy',
         'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=5_E=N_S=N_B=N_TrainedUncertainty_B7000_ParameterStudy',
         'Freeway_CorruptedStates=[1, 2, 3, 5, 6, 7]_MCTS_R=5_E=2_S=1_B=1_TrainedUncertainty_B7000_ParameterStudy',
-
-
-
 
     ]
     results_UAMCTS_Breakout_Online = [
@@ -433,51 +440,57 @@ if __name__ == '__main__':
 
     ]
 
-    # exp_names = ['C', 'T', 'Backpropagation', 'Selection', 'Expansion', 'Simulation', 'Combined']
-    # exp_names = ['C', 'T', 'Combined Online']
-    # exp_names = ['Backpropagation', 'Selection', 'Expansion', 'Simulation', 'Combined']
+    exp_names = ['T', 'C', 'Selection', 'Expansion', 'Simulation', 'Backpropagation', 'Combined']
+    experiment.show_multiple_experiment_result_paper(results_UAMCTS_Breakout_Offline, exp_names, "ttt")
+    exit(0)
+    # combining_results = [
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_5000_64_Run0.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_5000_64_Run1.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_5000_64_Run2.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_5000_64_Run3.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_5000_64_Run4.p"
+    # ]
 
-    exp_names_DQMCTS_Space = [
-                'dqn3', 'dqn7', 'dqn20',
-                'C', 'T',
-                's3E1', 's7E1', 's20E1',
-                'S3C', 'S7C', 'S20C']
-    
-    exp_names_DQMCTS_Freeway = [
-                'dqn7', 'dqn10', 'dqn20',
-                'C', 'T',
-                'F7E1', 'F10E1', 'F20E1',
-                'F7C', 'F10C', 'F20C']
-    
-    exp_names_DQMCTS_Breakout = [
-                'dqn7', 'dqn10', 'dqn20',
-                'C', 'T',
-                'B7E1', 'B10E1', 'B20E1',
-                'B7C', 'B10C', 'B20C']
+    # combining_results = [
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_10000_64_Run0.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_10000_64_Run1.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_10000_64_Run2.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_10000_64_Run3.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_10000_64_Run4.p"
+    # ]
 
-    exp_names_MCTS_Space = [
-        'C_0', 'T_0', 'C_5', 'T_5', 'C_10', 'T_10', 'C_20', 'T_20', 'C_50', 'T_50'
-    ]
-    exp_names_MCTS_Freeway = [
-        'C_0', 'T_0', 'C_5', 'T_5', 'C_10', 'T_10', 'C_25', 'T_25', 'C_50', 'T_50'
-    ]
-    exp_names_MCTS_Breakout = [
-        'C_0', 'T_0', 'C_5', 'T_5', 'C_10', 'T_10', 'C_25', 'T_25', 'C_50', 'T_50'
-    ]
+    # combining_results = [
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_25000_64_Run0.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_25000_64_Run1.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_25000_64_Run2.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_25000_64_Run3.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_25000_64_Run4.p"
+    # ]
 
-    exp_names_UAMCTS_Offline = [
-        'C', 'T', 
-        'E',
-        'R', 'UAMCTS'
-    ]
-    exp_names_UAMCTS_online = [
-        'C', 'T',
-        'e1000', 'r1000', 'u1000', 
-        'e3000', 'r3000', 'u3000', 
-        'e7000', 'r7000', 'u7000',
-    ]
-    # experiment.show_multiple_experiment_result_paper(results_UAMCTS_Breakout_Offline, exp_names_UAMCTS_Offline)
+    # combining_results = [
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_5000_10000_64_Run0.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_5000_10000_64_Run1.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_5000_10000_64_Run2.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_5000_10000_64_Run3.p",
+    #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_5000_10000_64_Run4.p"
+    # ]
 
-    experiment.show_multiple_experiment_result_paper(results_UAMCTS_Freeway_Online, exp_names_UAMCTS_online)
-    # experiment.multiple_experiments_t_test(results_file_name_list, exp_names)
+    # run_list = [1, 2, 4, 6, 7, 8, 9]
+    # combining_results = ['V2-Freeway_SemiOnlineUAMCTS_R=N_E=2_S=N_B=N_AdaptiveTau=10_5000_5000_Run' + str(i) + '.p' for i in run_list]
+    run_list = [0, 1, 2, 3, 4]
 
+    # combining_results = ['SpaceInvaders_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run' + str(i) + '.p' for i in run_list]
+    # combining_results = ['2_SpaceInvaders_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run' + str(i) + '.p' for i in range(6)]
+    # combined_name = "2_SpaceInvaders_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Combined"    
+    # combining_results = ['Freeway_Corrupted_' + str(i) + '.p' for i in range(5)]
+    # combined_name = "2_Freeway_CorruptedMCTS"    
+    combining_results = ['2_Freeway_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run' + str(i) + '.p' for i in range()]
+    combined_name = "2_Breakout_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Combined"
+    combine_runs(combining_results, combined_name)
+    # experiment.show_multiple_experiment_result_paper([combined_name], ['UAMCTS'], "SpaceInvaders-SemiOnline")
+    # experiment.show_multiple_experiment_result_paper([combined_name], ['UAMCTS'], "Freeway-SemiOnline")
+    experiment.show_multiple_experiment_result_paper([combined_name], ['UAMCTS'], "Breakout-SemiOnline")
+
+
+
+# UAMCTS/Results/Freeway_SemiOnlineUAMCTS_R=N_E=2_S=N_B=N_OneTime_Tau=1_1000_5000_32_Run_Combined.p
