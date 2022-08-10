@@ -3,7 +3,7 @@ from torch.functional import tensordot
 # from Experiments.GridWorldExperiment import RunExperiment as GridWorld_RunExperiment
 # from Experiments.TwoWayGridExperiment import RunExperiment as TwoWayGrid_RunExperiment
 from Experiments.MinAtarExperiment import RunExperiment as MinAtar_RunExperiment
-
+import os
 from Agents.ImperfectDQNMCTSAgentMinAtar import *
 
 def combine_runs(runs_list, result_name):
@@ -27,8 +27,29 @@ def combine_runs(runs_list, result_name):
         result['rewards'] = combined_runs_reward
         result['num_steps'] = combined_runs_steps
         pickle.dump(result, f)
-            
 
+
+def combine_experiment_result(runs_list, result_file_name):
+    res = {'num_steps': None, 'rewards': None, 'experiment_objs': None, 'detail': None}
+    all_files = os.listdir("Results/")
+    for file_name in runs_list:
+        if result_file_name in file_name:
+            with open("Results/" + file_name, 'rb') as f:
+                result = pickle.load(f)
+            f.close()
+            if res['num_steps'] is None:
+                res['num_steps'] = result['num_steps']
+            else:
+                res['num_steps'] = np.concatenate([res['num_steps'], result['num_steps']], axis=1)
+            
+            if res['rewards'] is None:
+                res['rewards'] = result['rewards']
+            else:
+                res['rewards'] = np.concatenate([res['rewards'], result['rewards']], axis=1)
+            
+            if res['experiment_objs'] is None:
+                res['experiment_objs'] = result['experiment_objs']
+    return res
 
 
 if __name__ == '__main__':
@@ -487,9 +508,9 @@ if __name__ == '__main__':
     # combined_name = "2_SpaceInvaders_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Combined"    
     # combining_results = ['Freeway_Corrupted_' + str(i) + '.p' for i in range(5)]
     # combined_name = "2_Freeway_CorruptedMCTS"    
-    combining_results = ['Breakout_MCTS_TrueModel_Run' + str(i) + '.p' for i in range(2)]
+    combining_results = ['Breakout_MCTS_TrueModel_Run' + str(i) + '.p' for i in range(4)]
     combined_name = "Breakout_MCTS_CorruptedModel_cxw"
-    combine_runs(combining_results, combined_name)
+    combine_experiment_result(combining_results, combined_name)
     # exit(0)
 
     # experiment.show_multiple_experiment_result_paper([combined_name], ['UAMCTS'], "SpaceInvaders-SemiOnline")
