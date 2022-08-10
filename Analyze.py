@@ -7,22 +7,25 @@ from Experiments.MinAtarExperiment import RunExperiment as MinAtar_RunExperiment
 from Agents.ImperfectDQNMCTSAgentMinAtar import *
 
 def combine_runs(runs_list, result_name):
-    num_runs = len(runs_list)
-    combined_runs = []
-    num_episode = 0
+    combined_runs_reward = []
+    combined_runs_steps = []
     for run in runs_list:
         with open("Results/" + run, 'rb') as f:
             run_result = pickle.load(f)
             for i in range(run_result['rewards'][0].shape[0]):
-                combined_runs.append(run_result['rewards'][0][i])
-            num_episode = run_result['rewards'][0].shape[1]
+                combined_runs_reward.append(run_result['rewards'][0][i])
+                combined_runs_steps.append(run_result['num_steps'][0][i])
 
-    combined_runs = np.array(combined_runs)
-    combined_runs = np.expand_dims(combined_runs, axis=0) 
-    
+    combined_runs_reward = np.array(combined_runs_reward)
+    combined_runs_reward = np.expand_dims(combined_runs_reward, axis=0)  
+
+    combined_runs_steps = np.array(combined_runs_steps)
+    combined_runs_steps = np.expand_dims(combined_runs_steps, axis=0) 
+
     with open("Results/" + result_name + '.p', 'wb') as f:
         result = run_result
-        result['rewards'] = combined_runs
+        result['rewards'] = combined_runs_reward
+        result['num_steps'] = combined_runs_steps
         pickle.dump(result, f)
             
 
@@ -441,8 +444,8 @@ if __name__ == '__main__':
     ]
 
     exp_names = ['T', 'C', 'Selection', 'Expansion', 'Simulation', 'Backpropagation', 'Combined']
-    experiment.show_multiple_experiment_result_paper(results_UAMCTS_Breakout_Offline, exp_names, "ttt")
-    exit(0)
+    # experiment.show_multiple_experiment_result_paper(results_UAMCTS_Breakout_Offline, exp_names, "ttt")
+    # exit(0)
     # combining_results = [
     #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_5000_64_Run0.p",
     #     "Freeway_SemiOnlineUAMCTS_R5_E=N_S=N_B=N_2500_5000_64_Run1.p",
@@ -484,9 +487,11 @@ if __name__ == '__main__':
     # combined_name = "2_SpaceInvaders_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Combined"    
     # combining_results = ['Freeway_Corrupted_' + str(i) + '.p' for i in range(5)]
     # combined_name = "2_Freeway_CorruptedMCTS"    
-    combining_results = ['2_Freeway_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run' + str(i) + '.p' for i in range()]
-    combined_name = "2_Breakout_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Combined"
+    combining_results = ['Breakout_MCTS_TrueModel_Run' + str(i) + '.p' for i in range(2)]
+    combined_name = "Breakout_MCTS_CorruptedModel_cxw"
     combine_runs(combining_results, combined_name)
+    # exit(0)
+
     # experiment.show_multiple_experiment_result_paper([combined_name], ['UAMCTS'], "SpaceInvaders-SemiOnline")
     # experiment.show_multiple_experiment_result_paper([combined_name], ['UAMCTS'], "Freeway-SemiOnline")
     experiment.show_multiple_experiment_result_paper([combined_name], ['UAMCTS'], "Breakout-SemiOnline")
