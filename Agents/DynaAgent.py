@@ -1,11 +1,8 @@
 import numpy as np
 import torch
-from torch.utils.tensorboard import SummaryWriter
 import torch.nn.functional as F
 import torch.optim as optim
-from abc import abstractmethod
 import random
-from profilehooks import timecall, profile, coverage
 
 import utils
 from Agents.BaseAgent import BaseAgent
@@ -56,7 +53,6 @@ class DynaAgent(BaseAgent):
         #                       step_size=params['max_stepsize'],
         #                       training=False)}
         self.loadValueFunction(params['vf'])
-        # print(self._vf['q'])
         self._sr = dict(network=None,
                         layers_type=[],
                         layers_features=[],
@@ -86,7 +82,6 @@ class DynaAgent(BaseAgent):
         :param observation: numpy array -> (observation shape)
         :return: action : numpy array
         '''
-        # print(self.num_terminal_steps, ' - ', self.num_steps)
         if self._sr['network'] is None:
             self.init_s_representation_network(observation)
 
@@ -135,7 +130,7 @@ class DynaAgent(BaseAgent):
         self.updateStateRepresentation()
 
         self.prev_state = self.getStateRepresentation(observation)
-        self.prev_action = self.action  # another option:** we can again call self.policy function **
+        self.prev_action = self.action
 
         return self.action_list[self.prev_action.cpu().item()]
 
@@ -183,18 +178,14 @@ class DynaAgent(BaseAgent):
         :param state: torch -> (1, state)
         :return: None
         '''
-
         nn_state_shape = state.shape
         self._vf['q']['network'] = StateActionVFNN(nn_state_shape, self.num_actions,
                                                    self._vf['q']['layers_type'],
                                                    self._vf['q']['layers_features'],
                                                    self._vf['q']['action_layer_num']).to(self.device)
         self._vf['q']['network'] = StateActionVFNN(nn_state_shape, self.num_actions).to(self.device)
-        # remove later
         # if self.is_pretrained:
-        #     # value_function_file = "Results_EmptyRoom/DQNVF_16x8/dqn_vf_7.p"
-        #     value_function_file = "TwoWayGridResult/DQN_VF_test"
-        #     print("loading ", value_function_file)
+        #     value_function_file = ""
         #     self.loadValueFunction(value_function_file)
         #     self._vf['q']['training'] = False
         self.optimizer = optim.Adam(self._vf['q']['network'].parameters(), lr=self._vf['q']['step_size'])
@@ -204,13 +195,11 @@ class DynaAgent(BaseAgent):
         :param state: torch -> (1, state)
         :return: None
         '''
-
         nn_state_shape = state.shape
         self._vf['s']['network'] = StateVFNN(nn_state_shape,
                                              self._vf['s']['layers_type'],
                                              self._vf['s']['layers_features']).to(self.device)
         self.optimizer = optim.Adam(self._vf['s']['network'].parameters(), lr=self._vf['s']['step_size'])
-
 
     def init_s_representation_network(self, observation):
         '''
@@ -222,7 +211,6 @@ class DynaAgent(BaseAgent):
                                                   self._sr['layers_type'],
                                                   self._sr['layers_features']).to(self.device)
 
-    # ***
     def updateValueFunction(self, transition_batch, vf_type):
 
         batch = utils.transition(*zip(*transition_batch))
@@ -259,7 +247,6 @@ class DynaAgent(BaseAgent):
 
         self._target_vf['q']['counter'] += 1
 
-    # ***
     def getStateRepresentation(self, observation, gradient=False):
         '''
         :param observation: numpy array -> [obs_shape]
@@ -284,7 +271,6 @@ class DynaAgent(BaseAgent):
             self.updateNetworkWeights(self._sr['network'], self._sr['step_size'] / self._sr['batch_size'])
             self._sr['batch_counter'] = 0
 
-    # ***
     def setTargetValueFunction(self):
         nn_state_shape = self.prev_state.shape
         if self._target_vf['q']['network'] is None:    
@@ -310,9 +296,7 @@ class DynaAgent(BaseAgent):
         self._target_vf['q']['counter'] = 0
         # self._target_vf['s']['counter'] = 0
 
-    # ***
     def getTransitionFromBuffer(self, n):
-
         # both model and value function are using this buffer
         if len(self.transition_buffer) < n:
             n = len(self.transition_buffer)
@@ -332,7 +316,6 @@ class DynaAgent(BaseAgent):
         if transition.is_terminal:
             self.num_terminal_steps -= 1
 
-    # ***
     def getActionIndex(self, action):
         for i, a in enumerate(self.action_list):
             if np.array_equal(a, action):

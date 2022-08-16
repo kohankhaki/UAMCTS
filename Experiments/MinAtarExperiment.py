@@ -1,18 +1,17 @@
-from unicodedata import name
 from Environments.MinAtarEnvironment import *
 import numpy as np
 import torch
 import os
-import utils, config
+import config
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import pickle
-from torch.utils.tensorboard import SummaryWriter
-
 from Experiments.BaseExperiment import BaseExperiment
 import config
+
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 debug = True
+
 
 class MinAtarExperiment(BaseExperiment):
     def __init__(self, agent, env, device, env_name, params=None):
@@ -189,6 +188,8 @@ class RunExperiment():
         self.device = torch.device("cpu")
         # Assuming that we are on a CUDA machine, this should print a CUDA device:
         print(self.device)
+        self.results_dir = "Results/"
+        self.plots_dir = "Plots/"
 
     def run_experiment(self, experiment_object_list, result_file_name, detail=None):
         print("Experiment results will be saved in: \n", result_file_name)
@@ -256,14 +257,14 @@ class RunExperiment():
                     if e % 100 == 99:
                         if save_uncertainty_buffer:
                             agent.save_uncertainty_buffer("l=" + str(len(agent.uncertainty_buffer)) + "_e=" + str(e)+"_"+"_r=" + str(r)+ "_" + result_file_name)
-                        with open("Results/" + result_file_name + '.p', 'wb') as f:
+                        with open(self.results_dir + result_file_name + '.p', 'wb') as f:
                             result = {'num_steps': self.num_steps_run_list,
                                     'rewards': self.rewards_run_list, 
                                     'experiment_objs': experiment_object_list,
                                     'detail': detail,}
                             pickle.dump(result, f)
                         f.close()
-            with open("Results/" + result_file_name + '.p', 'wb') as f:
+            with open(self.results_dir + result_file_name + '.p', 'wb') as f:
                 result = {'num_steps': self.num_steps_run_list,
                         'rewards': self.rewards_run_list, 
                         'experiment_objs': experiment_object_list,
@@ -271,10 +272,11 @@ class RunExperiment():
                 pickle.dump(result, f)
             f.close()    
             
-    def show_multiple_experiment_result_paper(self, results_file_name_list, exp_names, plot_name):
+    def show_multiple_experiment_result_paper(self, results_file_name_list, exp_names, plot_name, fig_test, axs_test, is_offline=False):
         def find_best_c(num_steps, experiment_objs):
             removed_list = []
             num_steps_avg = np.mean(num_steps, axis=1)
+            print(num_steps_avg)
             for counter1, i in enumerate(experiment_objs):
                 for counter2, j in enumerate(experiment_objs):
                     if i.num_iteration == j.num_iteration and \
@@ -320,10 +322,10 @@ class RunExperiment():
 
         def combine_experiment_result(result_file_name):
             res = {'num_steps': None, 'rewards': None, 'experiment_objs': None, 'detail': None}
-            all_files = os.listdir("Results/")
+            all_files = os.listdir(self.results_dir)
             for file_name in all_files:
                 if result_file_name in file_name:
-                    with open("Results/" + file_name, 'rb') as f:
+                    with open(self.results_dir + file_name, 'rb') as f:
                         result = pickle.load(f)
                     f.close()
                     if res['num_steps'] is None:
@@ -339,19 +341,20 @@ class RunExperiment():
                     if res['experiment_objs'] is None:
                         res['experiment_objs'] = result['experiment_objs']
             return res
+
         def make_smooth(runs, s=5):
             smooth_runs = np.zeros([runs.shape[0], runs.shape[1] - s])
             for i in range(runs.shape[0]):
                 for j in range(runs.shape[1] - s):
                     smooth_runs[i, j] = np.mean(runs[i, j: j + s])
             return smooth_runs
-        def offline(plot_name):
+
+        def offline(plot_name, fig_test, axs_test):
             if len(results_file_name_list) != len(exp_names):
                 print("experiments and names won't match", len(results_file_name_list), len(exp_names))
                 return None
 
-            
-            fig_test, axs_test = plt.subplots(1, 1, constrained_layout=True)
+            # fig_test, axs_test = plt.subplots(1, 1, constrained_layout=True)
             avg_rewards_list = [] 
             std_rewards_list = []
 
@@ -361,31 +364,25 @@ class RunExperiment():
                 result_file_name = results_file_name_list[i]
                 exp_name = exp_names[i]
                 result = combine_experiment_result(result_file_name)
+
                 rewards, experiment_objs = result['rewards'], result['experiment_objs']
                 rewards, experiment_objs = find_best_c(rewards, experiment_objs)
                 rewards, experiment_objs = find_best_tau(rewards, experiment_objs)
                 
-                if True:
-                    #only pick the first parameters in case of equal performance
-                    # rewards = np.array([rewards[0]])
-                    dqn_std = np.array([np.std(rewards, axis=0)])
-                    rewards = np.array([np.mean(rewards, axis=0)])
-                    experiment_objs = [experiment_objs[0]]
-                    # print(rewards.shape)
+                dqn_std = np.array([np.std(rewards, axis=0)])
+                rewards = np.array([np.mean(rewards, axis=0)])
+                experiment_objs = [experiment_objs[0]]
 
-                # rewards = rewards.reshape((1, -1, 1))
-                print(rewards.shape)
                 for j in experiment_objs:
-
                     print(exp_names[i],": ","--C: ", round(j.c, 1), "--Tau: ", j.tau, "--AvgReward:", np.mean(rewards[0], axis=0))            
                     print('-------------------------------------------------------------')
                     print('-------------------------------------------------------------')
                     print('-------------------------------------------------------------')
+
                 names = experiment_obj_to_name(experiment_objs)
                 for i, name in enumerate(names):
                     rewards_avg = np.mean(rewards[i], axis=0)
                     rewards_std = np.std(rewards[i], axis=0)
-                    x = range(len(rewards_avg))
                     if len(rewards_avg) == 1:
                         color = generate_hex_color()
                         if 'C' == exp_name:
@@ -393,14 +390,12 @@ class RunExperiment():
                             axs_test.axhline(rewards_avg, label=exp_name+name, color="#e0030c", linestyle="--")
                             errorbar = axs_test.errorbar(y=rewards_avg, x=[exp_name+name], yerr=rewards_std,
                                                 ls='none', color="#e0030c", capsize=5)
-                            # errorbar[-1][0].set_linestyle("--")
 
                         elif 'T' == exp_name:
                             axs_test.scatter(y=rewards_avg, x=exp_name+name, color="#06da87")
                             axs_test.axhline(rewards_avg, label=exp_name+name, color="#06da87", linestyle="--")
                             errorbar = axs_test.errorbar(y=rewards_avg, x=[exp_name+name], yerr=rewards_std,
                                                 ls='none', color="#06da87", capsize=5)
-                            # errorbar[-1][0].set_linestyle("--")
 
                         elif 'dqn' in exp_name:
                             axs_test.scatter(y=rewards_avg, x=exp_name+name, color=color)
@@ -409,17 +404,12 @@ class RunExperiment():
                             errorbar = axs_test.errorbar(y=rewards_avg, x=[exp_name+name], yerr=rewards_std,
                                                 linestyle='none', color=color, capsize=5)
                             errorbar[-1][0].set_linestyle("-.")
-                            # avg_rewards_list.append(rewards_avg[0])
-                            # std_rewards_list.append(rewards_std[0])
 
-                            # reward_list.append(rewards[i, :, 0])
-                            # name_list.append(exp_name+name)
                         elif '1000' in exp_name:
                             axs_test.scatter(y=rewards_avg, x=exp_name+name, color="#fb9518")
                             # axs_test.axhline(rewards_avg, label=exp_name+name, color="#06da87")
                             errorbar = axs_test.errorbar(y=rewards_avg, x=[exp_name+name], yerr=rewards_std,
                                                 ls='none', color="#fb9518", capsize=5)
-                            # errorbar[-1][0].set_linestyle("--")
 
                         elif '3000' in exp_name:
                             axs_test.scatter(y=rewards_avg, x=exp_name+name, color="#a857b8")
@@ -430,57 +420,25 @@ class RunExperiment():
                         else:
                             avg_rewards_list.append(np.mean(rewards[i, :, 0]))
                             std_rewards_list.append(np.std(rewards[i, :, 0]))
-                            # reward_list.append(rewards[i, :, 0])
                             name_list.append(exp_name+name)
-                            print('h')
 
             # axs_test.set_xticklabels(name_list, rotation=20, fontsize=8)
             axs_test.scatter(y=avg_rewards_list, x=name_list, color="#256fba")
             axs_test.errorbar(y=avg_rewards_list, x=name_list, yerr=std_rewards_list,
             ls='none', color="#256fba", solid_capstyle='projecting', capsize=5)
+            # axs_test.xaxis.set_tick_params(labeltop=True)
             # axs_test.boxplot(reward_list)
 
             # axs_test.legend()
-            # fig_test.savefig("UAMCTS-Plots/UAMCTS_Offline_SpaceInvaders"+".png", format="png")
-            # fig_test.savefig("UAMCTS-Plots/UAMCTS_Offline_SpaceInvaders"+".svg", format="svg")
+            # fig_test.savefig(self.plots_dir + plot_name +".png", format="png")
+            # fig_test.savefig(self.plots_dir + plot_name +".svg", format="svg")
 
-            # fig_test.savefig("UAMCTS-Plots/UAMCTS_Online_SpaceInvaders"+".png", format="png")
-            # fig_test.savefig("UAMCTS-Plots/UAMCTS_Online_SpaceInvaders"+".svg", format="svg")
-
-            # fig_test.savefig("UAMCTS-Plots/UAMCTS_Offline_Freeway"+".png", format="png")
-            # fig_test.savefig("UAMCTS-Plots/UAMCTS_Offline_Freeway"+".svg", format="svg")
-
-            # fig_test.savefig("UAMCTS-Plots/UAMCTS_Online_Freeway"+".png", format="png")
-            # fig_test.savefig("UAMCTS-Plots/UAMCTS_Online_Freeway"+".svg", format="svg")
-
-            fig_test.savefig(plot_name+".png", format="png")
-            # fig_test.savefig("Results/UAMCTS-Plots/tmp"+".svg", format="svg")
-
-            # fig_test.savefig("UAMCTS-Plots/UAMCTS_Offline_Breakout"+".png", format="png")
-            # fig_test.savefig("UAMCTS-Plots/UAMCTS_Offline_Breakout"+".svg", format="svg")
-
-            # fig_test.savefig("UAMCTS-Plots/UAMCTS_Online_Breakout"+".png", format="png")
-            # fig_test.savefig("UAMCTS-Plots/UAMCTS_Online_Breakout"+".svg", format="svg")
-
-
-            # fig_test.savefig("SpaceInvaders_TrueUncertainty_Performance"+".svg", format="svg")
-            # fig_test.savefig("Freeway_TrueUncertainty_Performance"+".svg", format="svg")
-            # fig_test.savefig("Breakout_TrueUncertainty_Performance2"+".svg", format="svg")
-            # print(reward_list, avg_rewards_list)
-            # for i, exp in enumerate(reward_list):
-            #     counter = 0
-            #     for r in exp:
-            #         # print(r, avg_rewards_list[i], std_rewards_list[i])
-            #         if avg_rewards_list[i] - std_rewards_list[i]<= r <= avg_rewards_list[i] + std_rewards_list[i]:
-            #             counter += 1
-            #     print(name_list[i], counter / len(reward_list[0]))         
-        def online(plot_name):
+      
+        def online(plot_name, fig_test, axs_test):
             print(results_file_name_list)
             if len(results_file_name_list) != len(exp_names):
                 print("experiments and names won't match", len(results_file_name_list), len(exp_names))
                 return None
-           
-            fig_test, axs_test = plt.subplots(1, 1, constrained_layout=True)
            
             name_list = []
 
@@ -488,14 +446,6 @@ class RunExperiment():
                 result_file_name = results_file_name_list[i]
                 exp_name = exp_names[i]
                 result = combine_experiment_result(result_file_name)
-                
-                print("reward shape:", result['rewards'].shape)
-                # result['rewards'] = result['rewards'][:,:,1700:2000]
-                # result['rewards'].reshape()
-                print("reward shape:", result['rewards'].shape)
-                print("mean", np.mean(result['rewards'][:,:,1000:1150]))
-                print(np.average(result['rewards']))
-                # exit(0)
                 rewards, experiment_objs = result['rewards'], result['experiment_objs']
                 rewards, experiment_objs = find_best_c(rewards, experiment_objs)
                 rewards, experiment_objs = find_best_tau(rewards, experiment_objs)
@@ -505,18 +455,9 @@ class RunExperiment():
                     else:
                         print(exp_names[i],": ","--C: ", round(j.c, 1), "--Tau: ", j.tau)
 
-                # done_rewrads = None
-                # for i in range(rewards.shape[1]):
-                #     avg = rewards[0, i].mean()
-                #     if avg > 0:
-                #         if done_rewrads is None:
-                #             done_rewrads = np.array([rewards[0, i]])
-                #         else:
-                #             tmp = np.array([rewards[0, i]])
-                #             done_rewrads = np.concatenate([done_rewrads, tmp], axis=0)
-                # rewards = np.array([done_rewrads[:, :120]])
-                rewards = np.array([make_smooth(rewards[0], s=50)])
-                # print(rewards.shape)
+
+                if(rewards.shape[2] > 1):
+                    rewards = np.array([make_smooth(rewards[0], s=50)])
 
                 names = experiment_obj_to_name(experiment_objs)
                 for i, name in enumerate(names):
@@ -525,29 +466,24 @@ class RunExperiment():
                     x = range(len(rewards_avg))
                     if len(rewards_avg) == 1:
                         color = generate_hex_color()
-                        # print(rewards_avg, rewards_std, exp_name+name, "\n")
-                        if "True" in exp_name:
+                        if "T" in exp_name:
                             
                             name_list.append(exp_name+name)
                             axs_test.axhline(rewards_avg, label=exp_name+name, color=color, linestyle="--")
-                        
                         else:
                             
                             name_list.append(exp_name+name)
                             axs_test.axhline(rewards_avg, label=exp_name+name, color=color, linestyle="-")
-
                     else:
-                        # print(rewards_avg.mean(), rewards_std.mean(), exp_name+name, "\n")
-
-                        axs_test.plot(x, rewards_avg, label=exp_name+name)
+                        axs_test.plot(x, rewards_avg, label=exp_name+name, color="orchid", )
                         axs_test.fill_between(x,
                                         rewards_avg - rewards_std,
-                                        rewards_avg + rewards_std,
-                                        alpha=.4, edgecolor='none')
-        
+                                        rewards_avg + rewards_std, color="orchid",
+                                        alpha=.3, edgecolor='none')
+            # axs_test.legend()
+            # fig_test.savefig(self.plots_dir + plot_name +".png", format="png")
+            # fig_test.savefig(self.plots_dir + plot_name +".svg", format="svg")
 
-            axs_test.legend()
-            fig_test.savefig(plot_name + ".png", format="png")
 
         def pretrained_online():
             space = "MinAtarResult/Paper/SpaceInvaders_CorruptedStates=[2, 3, 4, 5, 6]_MCTS_R=N_E=N_S=N_B=N_Buffer_run1.p"
@@ -584,7 +520,7 @@ class RunExperiment():
             # print(mcts_reward[0])
             training_start_ep = mcts_avg_reward.shape[0]
 
-            fig_test, axs_test = plt.subplots(1, 1, constrained_layout=True)
+            # fig_test, axs_test = plt.subplots(1, 1, constrained_layout=True)
 
             name_list = []
             for i in range(len(results_file_name_list)):
@@ -660,14 +596,17 @@ class RunExperiment():
             # fig_test.savefig("SpaceInvaders_TrainedUncertainty_Performance_Correct"+".svg", format="svg")
             # fig_test.savefig("Freeway_TrainedUncertainty_Performance_Correct"+".svg", format="svg")
             fig_test.savefig("Breakout_TrainedUncertainty_Performance_Correct"+".svg", format="svg")
-
-        # offline(plot_name)
-        online(plot_name)
+        if is_offline:
+            offline(plot_name, fig_test, axs_test)
+        else:
+            online(plot_name, fig_test, axs_test)
         # pretrained_online()
+
     def unpaired_t_test(self, result_file_name1, result_file_name2, names=['alg1', 'alg2']):
         def find_best_c(num_steps, experiment_objs):
             removed_list = []
             num_steps_avg = np.mean(num_steps, axis=1)
+            # print()
             for counter1, i in enumerate(experiment_objs):
                 for counter2, j in enumerate(experiment_objs):
                     if i.num_iteration == j.num_iteration and \

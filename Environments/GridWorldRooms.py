@@ -2,7 +2,6 @@ from Environments.GridWorldBase import GridWorld
 
 
 class GridWorldRooms(GridWorld):
-
     def __init__(self, params):
         self.house_shape = params['house_shape']
         self.rooms_shape = params['rooms_shape']

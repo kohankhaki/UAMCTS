@@ -1,11 +1,7 @@
-import math
 import pickle
 import random
 import numpy as np
-from pandas import value_counts
 import torch
-from torch._C import device
-from torch.functional import norm
 import torch.optim as optim
 import torch.nn.functional as F
 
@@ -13,7 +9,6 @@ import utils, config
 from Agents.MCTSAgent import MCTSAgent as MCTSAgent
 from Agents.DynaAgent import DynaAgent
 from DataStructures.Node import Node as Node
-from Networks.ValueFunctionNN.StateActionValueFunction import StateActionVFNN
 from Networks.ModelNN.StateTransitionModel import UncertaintyNN
 import config
 
@@ -111,7 +106,6 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
             self.init_uncertainty_network(self.prev_state)
             self.load_uncertainty(self.pre_trained_unetwork)
 
-
         if self.keep_tree and self.root is None:
             self.root = Node(None, self.prev_state)
             self.expansion(self.root)
@@ -124,7 +118,6 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
 
         for i in range(self.num_iterations):
             self.MCTS_iteration()
-            # self.render_tree()
         action, sub_tree = self.choose_action()
         action_index = self.getActionIndex(action)
 
@@ -135,7 +128,6 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
 
     def step(self, reward, observation, info=None):
         self.time_step += 1
-        # print(self.time_step)
 
         self.state = self.getStateRepresentation(observation)
         if not self.keep_subtree:
@@ -144,7 +136,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
 
         for i in range(self.num_iterations):
             self.MCTS_iteration()
-            # self.render_tree()
+
         action, sub_tree = self.choose_action()
         action_index = self.getActionIndex(action)
         self.subtree_node = sub_tree
@@ -168,7 +160,6 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
 
     def end(self, reward):
         self.time_step += 1
-        # print(self.time_step)
 
         reward = torch.tensor([reward], device=self.device)
         if self._uf['training']:
@@ -212,29 +203,23 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
         return max_action_list[random_ind], max_child_list[random_ind]
 
     def train_uncertainty(self):
-        print(self.tau)
         if self.u_has_trained:
             return
-        print('len buffer:' , len(self.uncertainty_buffer))
         if len(self.uncertainty_buffer) < max(self.minimum_uncertainty_buffer_training, self._uf['batch_size']):
             return
         loss_sum = 0
         for _ in range(self.u_epoch_training):
             corrupt_transition_batch = random.sample(self.uncertainty_buffer, k=self._uf['batch_size'])
             loss = self.training_step_uncertainty(corrupt_transition_batch) 
-            # print(loss)
             loss_sum += loss
-        # self.u_has_trained = True
         self.tau /= 10
-        # self.u_epoch_training = self.u_epoch_training // 5
         if self.tau < self.min_tau:
            self.tau = self.min_tau
            self.u_has_trained = True
         if loss_sum / (self.u_epoch_training) > 10 ** -7:
            self.u_has_trained = False           
-        print("loss ", self.episode_counter, ", buffer ", len(self.uncertainty_buffer), ":", 
+        print("uncertainty trained at episode ", self.episode_counter, ". buffer ", len(self.uncertainty_buffer), ":", 
         loss_sum / (self.u_epoch_training))
-        # exit(0)
 
     def training_step_uncertainty(self, corrupt_transition_batch):
         batch = utils.corrupt_transition(*zip(*corrupt_transition_batch))
@@ -261,7 +246,6 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_pos_onehot), dim=1)
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_shottimer_onehot), dim=1)
             
-            # one_hot_prev_state = prev_state_pos_onehot
         elif self.env == "freeway":
             state_copy = torch.clone(state)
             one_hot_prev_state = torch.tensor([])
@@ -280,7 +264,6 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                     s = self.getOnehotTorch(torch.tensor([state_copy[0][i]], dtype=int).unsqueeze(0), 10)
                 one_hot_prev_state = torch.cat((one_hot_prev_state, s), dim=1)
 
-            # one_hot_prev_state = self.getOnehotTorch(torch.tensor([state_copy[0][-2]], dtype=int).unsqueeze(0), 10)
         elif self.env == "breakout":
             state_copy = torch.clone(state)
             state_copy = state_copy.int()
@@ -299,14 +282,12 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_last_x), dim=1)
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_last_y), dim=1)
 
-            # one_hot_prev_state = prev_state_pos
-
         else:
             raise NotImplementedError("agent env name onehot state not implemented")
         return one_hot_prev_state
 
     def save_uncertainty(self, name):
-        with open("MiniAtariResult/Paper/SavedUncertainty/"+name+".p", 'wb') as file:
+        with open("Results/LearnedUncertainties/"+name+".p", 'wb') as file:
             pickle.dump(self._uf, file)
 
     def load_uncertainty(self, name):
@@ -332,7 +313,6 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
             corrupted_next_state = torch.from_numpy(corrupted_next_state).unsqueeze(0)
 
             corrupted_uncertainty = torch.tensor([0])
-            # if want not rounded next_state, replace next_state with _
             if calculate_uncertainty:
                 if not self.use_perfect_uncertainty:
                     # # Changing the features ********
@@ -375,13 +355,9 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                 weight_list = np.asarray(weight_list)
 
                 weights = np.exp(-weight_list / self.tau) / np.sum(np.exp(-weight_list / self.tau))
-                # print(return_list)
-                # print(weight_list)
-                # print(weights)
-                # print(np.average(return_list, weights=weights), np.average(return_list))
                 if len(weights) > 0:
                     uncertain_return = np.average(return_list, weights=weights)
-                else:  # the starting node is a terminal state
+                else:
                     uncertain_return = 0
                 sum_returns += uncertain_return
             return sum_returns / self.num_rollouts
@@ -453,7 +429,6 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                                 file.write("rolloutpath_nextstate:"+ str(i[1]))
                                 file.write("rolloutpath_terminal:"+str(i[2]))
                                 file.write("____________")
-                        exit(0)
                     single_return += reward
                     depth += 1
                     state = next_state
@@ -480,10 +455,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                         selected_node = child
                         break
                     else:
-
                         child_value = child_values[ind]
-                        # child_value = child.get_avg_value() + child.reward_from_par
-                        child_uncertainty = child_uncertainties[ind]
                         softmax_uncertainty = softmax_uncertainties[ind]
 
                         if min_child_value != np.inf and max_child_value != np.inf and min_child_value != max_child_value:
@@ -497,7 +469,6 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                         else:
                             uct_value = (child_value + \
                                         self.C * ((np.log(child.parent.num_visits) / child.num_visits) ** 0.5))
-                        # print("old:", uct_value - child_uncertainty, "  new:",uct_value, "  unc:", child_uncertainty)
                     if max_uct_value < uct_value:
                         max_uct_value = uct_value
                         selected_node = child
@@ -522,7 +493,6 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
 
                         child_value = child_values[ind]
                         child_value = child.get_avg_value() + child.reward_from_par
-                        child_uncertainty = child_uncertainties[ind]
                         softmax_uncertainty = softmax_uncertainties[ind]
 
                         if min_child_value != np.inf and max_child_value != np.inf and min_child_value != max_child_value:
@@ -533,7 +503,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                         uct_value = (child_value + \
                                      self.C * ((np.log(child.parent.num_visits) / child.num_visits) ** 0.5)) *\
                                     (1 - softmax_uncertainty)
-                        # print("old:", uct_value - child_uncertainty, "  new:",uct_value, "  unc:", child_uncertainty)
+
                     if max_uct_value < uct_value:
                         max_uct_value = uct_value
                         selected_node = child
@@ -565,7 +535,6 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
             for i, child in enumerate(possible_children):
                 if i != excluded_child:
                     node.add_child(child)
-        
         else:
             for a in self.action_list:
                 action = torch.tensor(a).unsqueeze(0)
@@ -577,7 +546,6 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                 node.add_child(child)
 
     def backpropagate(self, node, value):
-        #did not implement tau for backpropagation ***************
         if SemiOnlineUAMCTS.backpropagate_idea == 1:
             while node is not None:
                 node.add_to_values(value)

@@ -1,7 +1,6 @@
 from Environments.GridWorldBase import GridWorld
 
 
-
 if __name__ == "__main__":
     params = {'size': (3, 8), 'init_state': (1, 0), 'state_mode': 'coord',
               'obstacles_pos': [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6)],
@@ -18,6 +17,3 @@ if __name__ == "__main__":
     env.start()
     for i in range(10000):
         env.render()
-
-
-

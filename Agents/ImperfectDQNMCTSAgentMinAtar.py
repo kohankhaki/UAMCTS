@@ -1,12 +1,7 @@
-import math
 import pickle
 import random
-
 import numpy as np
-from pandas import value_counts
 import torch
-from torch._C import device
-from torch.functional import norm
 import torch.optim as optim
 import torch.nn.functional as F
 
@@ -256,7 +251,6 @@ class ImperfectMCTSAgentUncertaintyHandDesignedModelValueFunction(DynaAgent, MCT
                     s = self.getOnehotTorch(torch.tensor([state_copy[0][i]], dtype=int).unsqueeze(0), 10)
                 one_hot_prev_state = torch.cat((one_hot_prev_state, s), dim=1)
 
-            # one_hot_prev_state = self.getOnehotTorch(torch.tensor([state_copy[0][-2]], dtype=int).unsqueeze(0), 10)
         elif self.env == "breakout":
             prev_state_ball_y = self.getOnehotTorch(torch.tensor([state[0][0]], dtype=int).unsqueeze(0), 10)
             prev_state_ball_x = self.getOnehotTorch(torch.tensor([state[0][1]], dtype=int).unsqueeze(0), 10)
@@ -272,8 +266,6 @@ class ImperfectMCTSAgentUncertaintyHandDesignedModelValueFunction(DynaAgent, MCT
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_pos), dim=1)
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_last_x), dim=1)
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_last_y), dim=1)
-
-            # one_hot_prev_state = prev_state_pos
 
         else:
             raise NotImplementedError("agent env name onehot state not implemented")

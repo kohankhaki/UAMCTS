@@ -1,4 +1,3 @@
-
 class BaseEnvironment:
     def init(self, params={}):
         raise NotImplementedError('Expected `init` to be implemented')

@@ -29,8 +29,6 @@ class Node:
         self.sum_values += value
 
     def get_avg_value(self):
-        # return self.sum_values / (self.num_visits + 1)
-
         if self.num_visits > 0:
             avg_value = self.sum_values / self.num_visits
         else:
@@ -50,7 +48,6 @@ class Node:
             avg_value = self.sum_values
         return avg_value
 
-
     def inc_visits(self):
         self.num_visits += 1
 
@@ -59,11 +56,3 @@ class Node:
 
     def get_uncertainty(self):
         return self.uncertainty
-
-    def show(self):
-        try:
-            print("state: ", self.state, " value: ", self.sum_values, " num_visits: ", self.num_visits, " parent: ",
-                  self.parent.get_state())
-        except AttributeError:
-            print("state: ", self.state, " value: ", self.sum_values, " num_visits: ", self.num_visits, " parent: ",
-                  None)

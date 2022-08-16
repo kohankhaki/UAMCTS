@@ -11,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 from Experiments.BaseExperiment import BaseExperiment
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
-debug = True
+debug = False
 
 
 class TwoWayGridExperiment(BaseExperiment):

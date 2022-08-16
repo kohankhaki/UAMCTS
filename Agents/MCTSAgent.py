@@ -1,11 +1,9 @@
 import numpy as np
 import torch
 import random
-import gc
 
 from Agents.BaseAgent import BaseAgent
 from DataStructures.Node import Node as Node
-from profilehooks import timecall, profile, coverage
 from Networks.RepresentationNN.StateRepresentation import StateRepresentation
 
 class MCTSAgent(BaseAgent):
@@ -145,9 +143,7 @@ class MCTSAgent(BaseAgent):
         for a in range(self.num_actions):
             action_index = torch.tensor([a]).unsqueeze(0)
             next_state, is_terminal, reward, _ = self.model(node.get_state(),
-                                                              action_index)  # with the assumption of deterministic model
-            # if np.array_equal(next_state, node.get_state()):
-            #     continue
+                                                              action_index)
             value = self.get_initial_value(next_state)
             child = Node(node, next_state, is_terminal=is_terminal, action_from_par=a, reward_from_par=reward,
                          value=value)
@@ -162,7 +158,6 @@ class MCTSAgent(BaseAgent):
             state = node.get_state()
             while not is_terminal and depth < self.rollout_depth:
                 action_index = torch.randint(0, self.num_actions, (1, 1))
-                # action_index = torch.randint(0, self.num_actions, (1, 1), device=self.device)
                 next_state, is_terminal, reward, _ = self.model(state, action_index)
                 single_return += reward
                 depth += 1
@@ -204,7 +199,6 @@ class MCTSAgent(BaseAgent):
         :param observation: numpy array
         :return: None
         '''
-
         nn_state_shape = observation.shape
         self._sr['network'] = StateRepresentation(nn_state_shape,
                                                   self._sr['layers_type'],
