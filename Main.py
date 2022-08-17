@@ -6,10 +6,8 @@ At what step DQN starts to work with MCTS
 # use both mcts trajectories and dqn trajectories in the dqn buffer
 # use the selection path but with all children in the path
 # rollout with dqn policy in mcts
-import threading
-import time
-
-import utils, config
+import argparse
+import config
 
 from Experiments.ExperimentObject import ExperimentObject
 from Experiments.GridWorldExperiment import RunExperiment as GridWorld_RunExperiment
@@ -20,29 +18,82 @@ from Agents.ImperfectDQNMCTSAgentMinAtar import *
 from Agents.SemiOnlineUAMCTS import *
 from Agents.DynaAgent import *
 
+
 if __name__ == '__main__':
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--env', type=str, required=True)
+    parser.add_argument('--scenario', type=str, required=True)
+    parser.add_argument('--file_name', type=str, required=True)
+    parser.add_argument('--selection', default=False, action="store_true")
+    parser.add_argument('--expansion', default=False, action="store_true")
+    parser.add_argument('--simulation', default=False, action="store_true")
+    parser.add_argument('--backpropagation', default=False, action="store_true")
+    parser.add_argument('--num_run', type=int, default=1)
+    parser.add_argument('--num_episode', type=int, default=1)
+    parser.add_argument('--ni', type=int, default=5)
+    parser.add_argument('--ns', type=int, default=5)    
+    parser.add_argument('--ds', type=int, default=10)
+    parser.add_argument('--c', type=float, default=2**0.5)
+    parser.add_argument('--tau', type=float, default=0.1)
+
+
+    # parser.add_argument('--agent', type=str, required=True)
+
+    # parser.add_argument('--age', type=int)
+    args = parser.parse_args()
+    # if args.age:
+    # print(args.name, 'is', args.age, 'years old.')
+    # else:
+    # print('Hello,', args.name + '!')
+
+    config.rollout_idea = None # None, 1, 5
+    config.selection_idea = None  # None, 1
+    config.backpropagate_idea = None  # None, 1
+    config.expansion_idea = None # None, 2
+
+    if args.selection:
+        config.selection_idea = 1
+    if args.expansion:
+        config.expansion_idea = 2
+    if args.simulation:
+        config.rollout_idea = 5
+    if args.backpropagation:
+        config.backpropagate_idea = 1
+    
+    config.num_runs = args.num_run
+    config.num_episode = args.num_episode
+
+    if args.scenario == "offline":
+        config.u_training = False
+        config.use_perfect_uncertainty = True
+    else:
+        config.u_training = True
+        config.use_perfect_uncertainty = False
+
+    config.num_runs = args.num_run
+    config.num_episode = args.num_episode
+
+    result_file_name = args.file_name
+
     agent_class_list = [SemiOnlineUAMCTS]
-    # agent_class_list = [RealBaseDynaAgent]
 
     s_vf_list = config.s_vf_list
     s_md_list = config.s_md_list
     model_corruption_list = config.model_corruption_list
     experiment_detail = config.experiment_detail
 
-    c_list = config.c_list
-    
-    num_iteration_list = config.num_iteration_list
-    simulation_depth_list = config.simulation_depth_list
-    num_simulation_list = config.num_simulation_list
-    tau_list = config.tau_list
-
+    c_list = [args.c]
+    num_iteration_list = [args.ni] 
+    simulation_depth_list = [args.ds]
+    num_simulation_list = [args.ns]
+    tau_list = [args.tau]
     
     model_list = config.model_list
 
-
     vf_list = config.trained_vf_list
-    experiment = MinAtar_RunExperiment()
+
+    experiment = MinAtar_RunExperiment(config.env_name)
 
     experiment_object_list = []
     for agent_class in agent_class_list:
@@ -69,7 +120,5 @@ if __name__ == '__main__':
                                                         'tau': tau,}
                                                 obj = ExperimentObject(agent_class, params)
                                                 experiment_object_list.append(obj)
-
-    result_file_name = config.result_file_name
 
     experiment.run_experiment(experiment_object_list, result_file_name=result_file_name, detail=experiment_detail)

@@ -14,17 +14,12 @@ import config
 
 class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
     name = "SemiOnlineUAMCTS"
-    rollout_idea = config.rollout_idea # None, 1, 5
-    selection_idea = config.selection_idea  # None, 1
-    backpropagate_idea = config.backpropagate_idea  # None, 1
-    expansion_idea = config.expansion_idea # None, 2
-    
-    assert rollout_idea in [None, 1, 5] and \
-           selection_idea in [None, 1] and \
-           backpropagate_idea in [None, 1]  \
-           and expansion_idea in [None, 2]
 
     def __init__(self, params={}):
+        self.rollout_idea = config.rollout_idea # None, 1, 5
+        self.selection_idea = config.selection_idea  # None, 1
+        self.backpropagate_idea = config.backpropagate_idea  # None, 1
+        self.expansion_idea = config.expansion_idea # None, 2
         self.env = params['env_name'] #space_invaders, freeway, breakout
         self.device = params['device']
 
@@ -326,7 +321,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
         return corrupted_next_state, is_terminal, reward, corrupted_uncertainty
 
     def rollout(self, node):
-        if SemiOnlineUAMCTS.rollout_idea == 1:
+        if self.rollout_idea == 1:
             sum_returns = 0
             for _ in range(self.num_rollouts):
                 depth = 0
@@ -362,7 +357,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                 sum_returns += uncertain_return
             return sum_returns / self.num_rollouts
 
-        elif SemiOnlineUAMCTS.rollout_idea == 3:
+        elif self.rollout_idea == 3:
             sum_returns = 0
             for i in range(self.num_rollouts):
                 depth = 0
@@ -381,7 +376,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                 sum_returns += single_return
             return sum_returns / self.num_rollouts
 
-        elif SemiOnlineUAMCTS.rollout_idea == 5:
+        elif self.rollout_idea == 5:
             uncertainty_list = []
             return_list = []
             for i in range(self.num_rollouts):
@@ -437,7 +432,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
             return sum_returns / self.num_rollouts
 
     def selection(self):
-        if SemiOnlineUAMCTS.backpropagate_idea == 1:
+        if self.backpropagate_idea == 1:
             selected_node = self.subtree_node
             while len(selected_node.get_childs()) > 0:
                 max_uct_value = -np.inf
@@ -462,7 +457,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                             child_value = (child_value - min_child_value) / (max_child_value - min_child_value)
                         elif min_child_value == max_child_value:
                             child_value = 0.5
-                        if SemiOnlineUAMCTS.selection_idea == 1:
+                        if self.selection_idea == 1:
                             uct_value = (child_value + \
                                      self.C * ((np.log(child.parent.num_visits) / child.num_visits) ** 0.5)) *\
                                     (1 - softmax_uncertainty)
@@ -474,7 +469,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                         selected_node = child
             return selected_node
 
-        elif SemiOnlineUAMCTS.selection_idea == 1:
+        elif self.selection_idea == 1:
             selected_node = self.subtree_node
             while len(selected_node.get_childs()) > 0:
                 max_uct_value = -np.inf
@@ -513,7 +508,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
             return MCTSAgent.selection(self)
 
     def expansion(self, node):
-        if SemiOnlineUAMCTS.expansion_idea == 2:
+        if self.expansion_idea == 2:
             uncertainty_list = []
             possible_children = []
             for a in self.action_list:
@@ -546,7 +541,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
                 node.add_child(child)
 
     def backpropagate(self, node, value):
-        if SemiOnlineUAMCTS.backpropagate_idea == 1:
+        if self.backpropagate_idea == 1:
             while node is not None:
                 node.add_to_values(value)
                 node.inc_visits()

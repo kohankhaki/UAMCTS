@@ -184,12 +184,13 @@ class TrueModel_Breakout():
         return next_state, is_terminal, reward
 
 class RunExperiment():
-    def __init__(self):
+    def __init__(self, env_name):
         self.device = torch.device("cpu")
         # Assuming that we are on a CUDA machine, this should print a CUDA device:
         print(self.device)
         self.results_dir = "Results/"
         self.plots_dir = "Plots/"
+        self.env_name = env_name
 
     def run_experiment(self, experiment_object_list, result_file_name, detail=None):
         print("Experiment results will be saved in: \n", result_file_name)
@@ -199,17 +200,14 @@ class RunExperiment():
         self.num_steps_run_list = np.zeros([len(experiment_object_list), num_runs, num_episode], dtype=np.int)
         self.rewards_run_list = np.zeros([len(experiment_object_list), num_runs, num_episode], dtype=np.int)
         save_uncertainty_buffer = config.save_uncertainty_buffer
-        env_name_c = config.env_name
-        uncertainty_pretrained_c = config.u_pretrained_u_network
+        env_name = self.env_name
+        uncertainty_pretrained = config.u_pretrained_u_network
         
         for r in range(num_runs):
             print("starting runtime ", r + 1)
             for i, obj in tqdm(enumerate(experiment_object_list)):
                 print("---------------------")
                 print("This is the case: ", i)
-                
-                env_name = env_name_c #freeway, breakout, space_invaders
-                uncertainty_pretrained = uncertainty_pretrained_c
 
                 env = MinAtar(name=env_name)
                 
