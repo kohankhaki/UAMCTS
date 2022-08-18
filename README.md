@@ -18,14 +18,14 @@ pip install MinAtar/.
 To run the experiments, use the following command:
 
 ```
-Main.py [-h] --env ENV --scenario SCENARIO --file_name FILE_NAME
+python3 Main.py [-h] --env ENV --scenario SCENARIO --file_name FILE_NAME
                [--selection] [--expansion] [--simulation]
                [--backpropagation] [--num_run NUM_RUN]
                [--num_episode NUM_EPISODE] [--ni NI] [--ns NS] [--ds DS]
                [--c C] [--tau TAU] [--learn_transition] [--use_true_model]
 ```
-- ENV can be "space_invaders", "freeway", "breakout, or "two_way"
-- SCENARIO can be "online" or "offline"
+- ENV can be "space_invaders", "freeway", "breakout, or "two_way".
+- SCENARIO can be "online" or "offline".
 - FILE_NAME is the name of the file of the result of the experiments. This file contians a dictionary with keys 'num_steps' and 'rewards'.
 - Use any of the commands --selection, --expansion, --simulation, or --backpropagation to active the the UA corresponding component.
 - NUM_RUN and NUM_EPISODE are the number of runs and episodes.
@@ -36,4 +36,13 @@ Main.py [-h] --env ENV --scenario SCENARIO --file_name FILE_NAME
 - If you want to change the uncertainty function or the transition function networks' parameter, go to UAMCTS/config.py.
 
 
-
+## Plots
+To plot the result of experiments, use the following command:
+```
+python3 Analyze.py --scenario SCENARIO --file_name FILE_NAME --plot_name
+                  PLOT_NAME --metric METRIC
+```
+- FILE_NAME is the name of the file of the result of the experiments. This file contians a dictionary with keys 'num_steps' and 'rewards'.
+- SCENARIO can be "online" or "offline".
+- PLOT_NAME is the name of the generated plot. The plot will be saved with name PLOT_NAME.png in the UAMCTS/Plot/ directory.
+- metric can be "num_steps" or "rewards".

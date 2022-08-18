@@ -188,7 +188,7 @@ class MCTSAgentTwoWayOnlineModel(DynaAgent, MCTSAgent):
             return
         loss_sum = 0
         for _ in range(self.st_epoch_training):
-            corrupt_transition_batch = random.sample(self.transition_buffer, k=self._uf['batch_size'])
+            corrupt_transition_batch = random.sample(self.transition_buffer, k=self._st['batch_size'])
             loss = self.training_step_transition(corrupt_transition_batch) 
             loss_sum += loss
         print("loss ", self.episode_counter, ", buffer ", len(self.transition_buffer), ":", 

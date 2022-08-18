@@ -7,6 +7,7 @@ At what step DQN starts to work with MCTS
 # use the selection path but with all children in the path
 # rollout with dqn policy in mcts
 import argparse
+
 import config
 
 from Experiments.ExperimentObject import ExperimentObject
@@ -30,10 +31,10 @@ if __name__ == '__main__':
     parser.add_argument('--simulation', default=False, action="store_true")
     parser.add_argument('--backpropagation', default=False, action="store_true")
     parser.add_argument('--num_run', type=int, default=1)
-    parser.add_argument('--num_episode', type=int, default=1)
-    parser.add_argument('--ni', type=int, default=5)
-    parser.add_argument('--ns', type=int, default=5)    
-    parser.add_argument('--ds', type=int, default=10)
+    parser.add_argument('--num_episode', type=int, default=10)
+    parser.add_argument('--ni', type=int, default=10)
+    parser.add_argument('--ns', type=int, default=10)    
+    parser.add_argument('--ds', type=int, default=30)
     parser.add_argument('--c', type=float, default=2**0.5)
     parser.add_argument('--tau', type=float, default=0.1)
     parser.add_argument('--learn_transition', default=False, action="store_true")

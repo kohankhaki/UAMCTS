@@ -163,8 +163,9 @@ class RunExperiment():
 
         with open(self.results_dir + result_file_name + '.p', 'wb') as f:
             result = {'num_steps': self.num_steps_run_list,
-                      'experiment_objs': experiment_object_list,
+                    #   'experiment_objs': experiment_object_list,
                       'rewards': self.rewards_run_list, 
-                      'detail': detail,}
+                    #   'detail': detail,
+                      }
             pickle.dump(result, f)
         f.close()
