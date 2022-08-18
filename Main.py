@@ -10,12 +10,12 @@ import argparse
 import config
 
 from Experiments.ExperimentObject import ExperimentObject
-from Experiments.GridWorldExperiment import RunExperiment as GridWorld_RunExperiment
 from Experiments.TwoWayGridExperiment import RunExperiment as TwoWayGrid_RunExperiment
 from Experiments.MinAtarExperiment import RunExperiment as MinAtar_RunExperiment
 
-from Agents.ImperfectDQNMCTSAgentMinAtar import *
 from Agents.SemiOnlineUAMCTS import *
+from Agents.SemiOnlineUAMCTSTwoWay import *
+from Agents.MCTSAgentTwoWayOnlineModel import *
 from Agents.DynaAgent import *
 
 
@@ -36,33 +36,32 @@ if __name__ == '__main__':
     parser.add_argument('--ds', type=int, default=10)
     parser.add_argument('--c', type=float, default=2**0.5)
     parser.add_argument('--tau', type=float, default=0.1)
+    parser.add_argument('--learn_transition', default=False, action="store_true")
+    parser.add_argument('--use_true_model', default=False, action="store_true")
 
 
-    # parser.add_argument('--agent', type=str, required=True)
-
-    # parser.add_argument('--age', type=int)
     args = parser.parse_args()
-    # if args.age:
-    # print(args.name, 'is', args.age, 'years old.')
-    # else:
-    # print('Hello,', args.name + '!')
 
     config.rollout_idea = None # None, 1, 5
     config.selection_idea = None  # None, 1
     config.backpropagate_idea = None  # None, 1
     config.expansion_idea = None # None, 2
 
-    if args.selection:
-        config.selection_idea = 1
-    if args.expansion:
-        config.expansion_idea = 2
-    if args.simulation:
-        config.rollout_idea = 5
-    if args.backpropagation:
-        config.backpropagate_idea = 1
+    if not args.learn_transition:
+        if args.selection:
+            config.selection_idea = 1
+        if args.expansion:
+            config.expansion_idea = 2
+        if args.simulation:
+            config.rollout_idea = 5
+        if args.backpropagation:
+            config.backpropagate_idea = 1
     
     config.num_runs = args.num_run
     config.num_episode = args.num_episode
+
+    if args.learn_transition:
+        config.u_training = True
 
     if args.scenario == "offline":
         config.u_training = False
@@ -76,7 +75,13 @@ if __name__ == '__main__':
 
     result_file_name = args.file_name
 
-    agent_class_list = [SemiOnlineUAMCTS]
+    if args.env == "two_way":
+        if args.learn_transition:
+            agent_class_list = [MCTSAgentTwoWayOnlineModel]
+        else:
+            agent_class_list = [SemiOnlineUAMCTSTwoWay]
+    else:
+        agent_class_list = [SemiOnlineUAMCTS]
 
     s_vf_list = config.s_vf_list
     s_md_list = config.s_md_list
@@ -93,7 +98,10 @@ if __name__ == '__main__':
 
     vf_list = config.trained_vf_list
 
-    experiment = MinAtar_RunExperiment(config.env_name)
+    if args.env == "two_way":
+        experiment = TwoWayGrid_RunExperiment(args.use_true_model)
+    else:
+        experiment = MinAtar_RunExperiment(args.env, args.use_true_model)
 
     experiment_object_list = []
     for agent_class in agent_class_list:

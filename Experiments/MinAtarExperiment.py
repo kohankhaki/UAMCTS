@@ -184,14 +184,15 @@ class TrueModel_Breakout():
         return next_state, is_terminal, reward
 
 class RunExperiment():
-    def __init__(self, env_name):
+    def __init__(self, env_name, use_true_model=False):
         self.device = torch.device("cpu")
         # Assuming that we are on a CUDA machine, this should print a CUDA device:
         print(self.device)
         self.results_dir = "Results/"
         self.plots_dir = "Plots/"
         self.env_name = env_name
-
+        self.use_true_model = use_true_model
+        
     def run_experiment(self, experiment_object_list, result_file_name, detail=None):
         print("Experiment results will be saved in: \n", result_file_name)
         num_runs = config.num_runs
@@ -219,6 +220,13 @@ class RunExperiment():
                     true_model = TrueModel_Breakout(env.transitionFunction)
                 else:
                     raise NotImplementedError("env name is wrong!")
+                
+                true_fw_model = true_model.transitionFunction
+                if self.use_true_model:
+                    corrupted_fw_model  = true_model.transitionFunction
+                else:
+                    corrupted_fw_model  = true_model.corruptTransitionFunction
+
                 action_list = np.asarray(env.getAllActions()).reshape(len(env.getAllActions()), 1)
                 # initializing the agent
                 agent = obj.agent_class({'env_name': env_name, 
@@ -233,8 +241,8 @@ class RunExperiment():
                                          'device': self.device,
                                          'model': obj.model,
                                          'true_bw_model': None,
-                                         'true_fw_model': true_model.transitionFunction,
-                                         'corrupted_fw_model': true_model.corruptTransitionFunction, #corruptTransitionFunction
+                                         'true_fw_model': true_fw_model,
+                                         'corrupted_fw_model': corrupted_fw_model, #corruptTransitionFunction
                                          'transition_dynamics': None,
                                          'c': obj.c,
                                          'num_iteration': obj.num_iteration,

@@ -3,11 +3,11 @@ import torch
 
 
 class Node:
-    def __init__(self, parent, state, env_state=None, value=0, is_terminal=False, action_from_par=None, reward_from_par=0, uncertainty=0.0, cloned_env=None):
+    def __init__(self, parent, state, env_state=None, value=0, is_terminal=False, action_from_par=None, reward_from_par=0, uncertainty=0.0, cloned_env=None, num_visits=0):
         self.state = state
         self.env_state = env_state
         self.sum_values = value
-        self.num_visits = 0
+        self.num_visits = num_visits
         self.childs_list = []
         self.parent = parent
         self.is_terminal = is_terminal
