@@ -62,7 +62,7 @@ if __name__ == '__main__':
     config.num_episode = args.num_episode
 
     if args.learn_transition:
-        config.u_training = True
+        config.st_training = True
 
     if args.scenario == "offline":
         config.u_training = False

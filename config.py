@@ -16,10 +16,10 @@ st_step_size = 0.001
 # 'fc' defines a fully connected hidden layer.
 # st_layers_features defines the number of the hidden units in each corresponding hidden layer. 
 st_layers_type = ['fc']
-st_layers_features = [16]
+st_layers_features = [8]
 # st_epoch_training is the parameter E and st_epoch_training_rate is I
-st_epoch_training = 6
-st_epoch_training_rate = 10
+st_epoch_training = 10000
+st_epoch_training_rate = 500
 minimum_transition_buffer_training = st_batch_size
 st_training = True
 st_training_steps = [st_epoch_training_rate * i for i in range(num_episode * max_step_each_episode // st_epoch_training_rate)]
@@ -42,7 +42,7 @@ u_training = True
 u_training_steps = [u_epoch_training_rate * i for i in range(num_episode * max_step_each_episode // u_epoch_training_rate)]
 
 u_pretrained_u_network = None
-use_perfect_uncertainty = True
+use_perfect_uncertainty = False
 save_uncertainty_buffer = False
 pre_gathered_buffer = None 
 

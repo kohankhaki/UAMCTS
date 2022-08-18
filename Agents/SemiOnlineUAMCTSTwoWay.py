@@ -385,12 +385,7 @@ class SemiOnlineUAMCTSTwoWay(DynaAgent, MCTSAgent):
                         next_state, is_terminal, reward, _ = self.model(state, action, calculate_uncertainty=False)
                         rollout_path.append([state, next_state, is_terminal])
                     except:
-                        for i in rollout_path:
-                            with open("log.txt", "a") as file:
-                                file.write("rolloutpath_state:"+str(i[0]))
-                                file.write("rolloutpath_nextstate:"+ str(i[1]))
-                                file.write("rolloutpath_terminal:"+str(i[2]))
-                                file.write("____________")
+                        pass
                     single_return += reward
                     depth += 1
                     state = next_state
