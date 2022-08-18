@@ -1,7 +1,7 @@
-#Monte Carlo Tree Search in the Presence of Model Uncertainty
+# Monte Carlo Tree Search in the Presence of Model Uncertainty
 This is the readme file for running the experiments in the *Monte Carlo Tree Search in the Presence of Model Uncertainty* paper.
 
-##Libraries requirements
+## Libraries requirements
 You need to have installed Python 3.8. You also need to install PyTorch, NumPy, Matplotlib, torchvision, tqdm packages:
 
 ```
