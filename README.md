@@ -14,5 +14,26 @@ You also need to install the **modified** version of the [MinAtar Environments](
 pip install MinAtar/.
 ```
 
+## Experiments
+To run the experiments, use the following command:
 
-python Main.py --env two_way --scenario online --ni 2  --file_name tmp --selection --learn_transition
+```
+Main.py [-h] --env ENV --scenario SCENARIO --file_name FILE_NAME
+               [--selection] [--expansion] [--simulation]
+               [--backpropagation] [--num_run NUM_RUN]
+               [--num_episode NUM_EPISODE] [--ni NI] [--ns NS] [--ds DS]
+               [--c C] [--tau TAU] [--learn_transition] [--use_true_model]
+```
+- ENV can be "space_invaders", "freeway", "breakout, or "two_way"
+- SCENARIO can be "online" or "offline"
+- FILE_NAME is the name of the file of the result of the experiments.
+- Use any of the commands --selection, --expansion, --simulation, or --backpropagation to active the the UA corresponding component.
+- NUM_RUN and NUM_EPISODE are the number of runs and episodes.
+- NI, NS, and DS are the number of iterations, number of simulations, and depth o simulations respectively.
+- C is exploration constant and TAU is uncertainty factor. For the online scenario of UAMCTS, TAU is the initial value of the uncertainty factor. 
+- Use use_true_model option if you want the agent to have access to the true model of the environment.
+- Use learn_transition option if you want to run an experiment with the MCTS agent that learns the transition function online. This option works only for the "two_way" environment and not for the UA components.
+
+
+
+
