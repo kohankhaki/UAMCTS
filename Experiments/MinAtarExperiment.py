@@ -464,7 +464,7 @@ class RunExperiment():
 
 
                 if(rewards.shape[2] > 1):
-                    rewards = np.array([make_smooth(rewards[0], s=50)])
+                    rewards = np.array([make_smooth(rewards[0], s=10)])
 
                 names = experiment_obj_to_name(experiment_objs)
                 for i, name in enumerate(names):
