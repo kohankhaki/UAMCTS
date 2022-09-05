@@ -520,7 +520,7 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
             if np.sum(uncertainty_list) != 0:
                 norm_uncertainties /= np.sum(uncertainty_list)
             excluded_child = None
-            if np.random.rand() < (1 - self.tau/10) and np.sum(uncertainty_list) != 0:
+            if np.random.rand() < (1 - self.tau) and np.sum(uncertainty_list) != 0:
                 excluded_child = np.random.choice(len(possible_children), p=norm_uncertainties)
             for i, child in enumerate(possible_children):
                 if i != excluded_child:
