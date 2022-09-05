@@ -6,11 +6,11 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils import data
 import pickle
-import Utils as utils
+import utils as utils
 import random
 import matplotlib.pyplot as plt
 import os
-import Config
+import config
 class UncertaintyNN(nn.Module):
     def __init__(self, state_shape, action_shape, layers_type, layers_features):
         # state : B, state_size(linear)
@@ -206,8 +206,15 @@ def draw_data(data):
     print(prev_state.shape, true_uncertainty.shape)
 
 def unique_datapoints(data):
+    # print(data[0])
+    # exit(0)
     data = utils.corrupt_transition(*zip(*data))
     prev_state = torch.cat(data.prev_state).numpy()
+    true_next_states = torch.cat(data.true_state).numpy()
+    corrupt_next_states = torch.cat(data.corrupt_state).numpy()
+    true_uncertainty = np.mean((true_next_states - corrupt_next_states) ** 2, axis=1)
+    print(true_uncertainty.shape, np.count_nonzero(true_uncertainty) / prev_state.shape[0])
+
     unique_prev_state = np.unique(prev_state, axis=0)
     print("buffer size:", prev_state.shape, "unique points:", unique_prev_state.shape)
     return unique_prev_state.shape[0]
@@ -394,7 +401,13 @@ if __name__ == "__main__":
     # print(main_check("breakout"))
 
     buffer_folder = "MiniAtariResult/Thesis/Buffer/Breakout2"
-    buffer_file_name = os.listdir(buffer_folder)
+    buffer_file_name = ['/home/farnaz/UAMCTS/Results/UncertaintyBuffers/l=24500_e=999__r=0_3_Breakout_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run1.p',
+'/home/farnaz/UAMCTS/Results/UncertaintyBuffers/l=15292_e=999__r=0_2_Freeway_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run0.p',
+'/home/farnaz/UAMCTS/Results/UncertaintyBuffers/l=82079_e=299__r=0_SpaceInvaders_SemiOnlineUAMCTS_R=5_E=2_S=1_B=1_Tau=10_Run3.p'
+    ]
+
+
+
 
     # unique_data = 0
     # for f in buffer_file_name:
@@ -406,16 +419,17 @@ if __name__ == "__main__":
     # exit(0)
     #train U
     for f in buffer_file_name:
-        with open(buffer_folder+"/"+f, 'rb') as file:
+        with open(f, 'rb') as file:
             buffer = pickle.load(file)
-        buffer = buffer[0: 1000]
+        # buffer = buffer[0: 1000]
         unique_datapoints(buffer)
-        name = "bsize="+str(len(buffer))+f.split("MCTS")[0][:-1]+".p"
-        loss_list = main_train(buffer, num_epochs=10000, name=name)
-        with open("MiniAtariResult/Thesis/UncertaintyModel/Loss_"+name, 'wb') as file:
-            pickle.dump(loss_list, file)
-        plt.plot(loss_list)
-        plt.savefig("uncertainty_train.png")
+    exit(0)
+        # name = "bsize="+str(len(buffer))+f.split("MCTS")[0][:-1]+".p"
+        # loss_list = main_train(buffer, num_epochs=10000, name=name)
+        # with open("MiniAtariResult/Thesis/UncertaintyModel/Loss_"+name, 'wb') as file:
+        #     pickle.dump(loss_list, file)
+        # plt.plot(loss_list)
+        # plt.savefig("uncertainty_train.png")
 
 
     # save_uncertainty(buffer_file_name, uf)    

@@ -51,13 +51,6 @@ def plot_result(file_name, plot_name, is_offline, metric):
         axs_test.legend()
         fig_test.savefig(plots_dir + plot_name +".png", format="png")
 
-
-
-        
-
-
-
-    
     if is_offline:
         offline(result, plot_name, fig_test, axs_test)
     else:
