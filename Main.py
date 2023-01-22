@@ -12,6 +12,7 @@ import config
 
 from Experiments.ExperimentObject import ExperimentObject
 from Experiments.TwoWayGridExperiment import RunExperiment as TwoWayGrid_RunExperiment
+from Experiments.TwoWayGridIcyExperiment import RunExperiment as TwoWayGridIcy_RunExperiment
 from Experiments.MinAtarExperiment import RunExperiment as MinAtar_RunExperiment
 
 from Agents.SemiOnlineUAMCTS import *
@@ -76,7 +77,7 @@ if __name__ == '__main__':
 
     result_file_name = args.file_name
 
-    if args.env == "two_way":
+    if args.env == "two_way" or args.env == "two_way_icy":
         if args.learn_transition:
             agent_class_list = [MCTSAgentTwoWayOnlineModel]
         else:
@@ -89,7 +90,8 @@ if __name__ == '__main__':
     model_corruption_list = config.model_corruption_list
     experiment_detail = config.experiment_detail
 
-    c_list = [args.c]
+    # c_list = [args.c]
+    c_list = [2**-1, 2**0, 2**0.5, 2**1]
     num_iteration_list = [args.ni] 
     simulation_depth_list = [args.ds]
     num_simulation_list = [args.ns]
@@ -101,6 +103,8 @@ if __name__ == '__main__':
 
     if args.env == "two_way":
         experiment = TwoWayGrid_RunExperiment(args.use_true_model)
+    elif args.env == "two_way_icy":
+        experiment = TwoWayGridIcy_RunExperiment(args.use_true_model)
     else:
         experiment = MinAtar_RunExperiment(args.env, args.use_true_model)
 

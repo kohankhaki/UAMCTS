@@ -5,17 +5,19 @@ import os
 class GridWorld():
     def __init__(self, params=None):
         if params is None:  # default grid
-            params = {'size': (5, 4), 'init_state': 'random', 'state_mode': 'coord',
-                      'obstacles_pos': [(1, 1), (2, 1), (3, 1), (4,1)],
-                      'rewards_pos': [(4, 2), (4, 3)], 'rewards_value': [1, 2],
-                      'terminals_pos': [(4,3)], 'termination_probs':[1],
-                      'actions': [(0, 1), (1, 0), (0, -1), (-1, 0)],
-                      'neighbour_distance': 0,
-                      'agent_color': [0,1,0], 'ground_color':[0,0,0], 'obstacle_color': [1,1,1],
-                      'transition_randomness': 0.0,
-                      'window_size' : (255, 255),
-                      'aging_reward': -1
-                       }
+            params={'size': (3, 7), 'init_state': (1, 0), 'state_mode': 'coord',
+                    'obstacles_pos': [(1, 1),(1, 2), (1, 3), (1, 4), (1, 5)],
+                    'icy_pos': [(0, 1)],
+                    'rewards_pos': [(1, 6)], 'rewards_value': [10],
+                    'terminals_pos': [(1, 6)], 'termination_probs': [1],
+                    'actions': [(0, 1), (1, 0), (0, -1), (-1, 0)],
+                    'neighbour_distance': 0,
+                    'agent_color': [0, 1, 0], 'ground_color': [0, 0, 0],
+                    'obstacle_color': [1, 1, 1], 'icy_color': [1, 0, 0],
+                    'transition_randomness': 0.0,
+                    'window_size': (255, 255),
+                    'aging_reward': 0
+                    }
 
         if self.checkSimilarShapes(params['agent_color'], params['obstacle_color']) and \
             self.checkSimilarShapes(params['agent_color'], params['ground_color']):
@@ -23,6 +25,7 @@ class GridWorld():
             self._obstacle_color = params['obstacle_color']
             self._ground_color = params['ground_color']
             self._agent_color = params['agent_color']
+            self._icy_color = params['icy_color']
         else:
             raise ValueError("colors shape mismatch")
 
@@ -52,6 +55,7 @@ class GridWorld():
 
         self._agent_pos = None
         self._obstacles_pos = []
+        self._icy_pos = []
         self._rewards_pos = params['rewards_pos']
         self._rewards_value = params['rewards_value']
         self._terminals_pos = params['terminals_pos']
@@ -65,6 +69,7 @@ class GridWorld():
                 raise ValueError("initial position is out of range")
         self._init_pos = params['init_state']
         self.addObstacles(params['obstacles_pos'], self._grid)
+        self.addIcy(params['icy_pos'], self._grid)
         self.__createOnehotMap()
         self.screen = None # for visualization
         self.is_imperfect = False
@@ -80,10 +85,11 @@ class GridWorld():
         """
         self._grid = self.__createEmptyGrid()
         self.addObstacles(self._obstacles_pos, self._grid)
+        self.addIcy(self._icy_pos, self._grid)
 
         if self._init_pos == 'random':
             pos = np.random.randint(0, self._grid_shape[0]), np.random.randint(0, self._grid_shape[1])
-            while pos in self._obstacles_pos or pos in self._terminals_pos:
+            while pos in self._obstacles_pos or pos in self._terminals_pos or pos in self._icy_pos:
                 pos = np.random.randint(0, self._grid_shape[0]), np.random.randint(0, self._grid_shape[1])
             self._agent_pos = pos
         else:
@@ -119,7 +125,6 @@ class GridWorld():
         # update agent.pos and grid
         self._grid[self._agent_pos] = self._ground_color
         next_agent_pos = self.__transitionFunction(self._agent_pos, action)
-        # if next_agent_pos not in self._obstacles_pos:
         self._agent_pos = next_agent_pos
 
         self._grid[self._agent_pos] = self._agent_color
@@ -165,6 +170,7 @@ class GridWorld():
             for pos in agent_pos_list:
                 grid = self.__createEmptyGrid()
                 self.addObstacles(self._obstacles_pos, grid)
+                self.addIcy(self._obstacles_pos, grid)
                 grid[pos] = self._agent_color
                 state_list.append(grid)
             return state_list
@@ -203,6 +209,19 @@ class GridWorld():
             else:
                 raise ValueError("obstacle position is out of range")
 
+    def addIcy(self, icy, grid):
+        """ change the grid values, add obstacle in their position."""
+        for pos in icy:
+            if self.checkPosInsideGrid(pos):  # if inside the grid
+                if list(grid[pos]) == self._ground_color:
+                    if pos not in self._icy_pos:
+                        self._icy_pos.append(pos)
+                    grid[pos] = self._icy_color
+                else:
+                    raise ValueError("icy position already filled")
+            else:
+                raise ValueError("icy position is out of range")
+
     def checkPosInsideGrid(self, pos):
         if 0 <= pos[0] < self._grid_shape[0] \
                 and 0 <= pos[1] < self._grid_shape[1]:  # if inside the grid
@@ -240,9 +259,12 @@ class GridWorld():
             # choose a random action
             action = self.getAllActions()[random.randint(0, len(self.getAllActions()) - 1)]
 
-        next_pos = tuple(sum(x) for x in zip(pos, action)) #stochastic backward
-        # next_pos = tuple(sum(x) % self._grid_shape[i] for i,x in enumerate(zip(pos, action))) #deterministic backward
+        next_pos = tuple(sum(x) for x in zip(pos, action))
         if self.checkPosInsideGrid(next_pos) and next_pos not in self._obstacles_pos:
+            if next_pos in self._icy_pos:
+                next_next_pos = tuple(sum(x) for x in zip(next_pos, action))
+                if self.checkPosInsideGrid(next_next_pos) and next_next_pos not in self._obstacles_pos:
+                    return next_next_pos
             return next_pos
         return pos
 
@@ -438,6 +460,9 @@ class GridWorld():
     def get_obstacles_pos(self):
         return self._obstacles_pos
 
+    def get_icy_pos(self):
+        return self._icy_pos
+
     def __createOnehotMap(self):
         all_states = self.getAllStates('coord')
         self.one_hot_map = {}
@@ -453,6 +478,7 @@ class GridWorld():
         agent_color = [i * 255 for i in self._agent_color]
         ground_color = [i * 255 for i in self._ground_color]
         obstacle_color = [i * 255 for i in self._obstacle_color]
+        icy_color = [i * 255 for i in self._icy_color]
         text_color = (240,240,10)
         info_color = (200, 50, 50)
         # This sets the WIDTH and HEIGHT of each grid location
@@ -517,6 +543,8 @@ class GridWorld():
                     color = agent_color
                 elif list(grid[x][y]) == self._obstacle_color:
                     color = obstacle_color
+                elif list(grid[x][y]) == self._icy_color:
+                    color = icy_color
                 pygame.draw.rect(self.screen,
                                  color,
                                  [(MARGIN + WIDTH) * y + MARGIN,
@@ -602,6 +630,12 @@ class GridWorld():
 
 if __name__ == "__main__":
     env = GridWorld()
+    all_states = env.getAllStates()
+    all_actions = env.getAllActions()
+    for state in all_states:
+        for action in all_actions:
+            next_state = env.transitionFunction(state, action)
+            print(state, "+", action, "=", next_state)
 
 
 
