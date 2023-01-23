@@ -4,8 +4,8 @@ backpropagate_idea = 1
 expansion_idea = 2
 
 num_runs = 5
-num_episode = 1
-max_step_each_episode = 300
+num_episode = 300
+max_step_each_episode = 50
 
 # Below you can change the parameters of the transition network. (from line 21 to 35)
 # st_batch_size is the batch size.
@@ -22,7 +22,7 @@ st_epoch_training = 10000
 st_epoch_training_rate = 500
 minimum_transition_buffer_training = st_batch_size
 st_training = True
-st_training_steps = [st_epoch_training_rate * i for i in range(num_episode * max_step_each_episode // st_epoch_training_rate)]
+st_training_steps = [st_epoch_training_rate * i for i in range(1, num_episode * max_step_each_episode // st_epoch_training_rate)]
 
 # Below you can change the parameters of the uncertainty network. (from line 38 to 42)
 # u_batch_size is the batch size.
@@ -32,14 +32,21 @@ u_step_size = 0.001
 # u_layers_type defines the type of the hidden layers in a list. 
 # 'fc' defines a fully connected hidden layer.
 # u_layers_features defines the number of the hidden units in each corresponding hidden layer. 
-u_layers_type = ['fc', 'fc']
-u_layers_features = [128, 128]
+u_layers_type = []
+u_layers_features = []
 # u_epoch_training is the parameter E and u_epoch_training_rate is I
-u_epoch_training = 300
-u_epoch_training_rate = 5000
+#here is r
+# u_epoch_training = 300
+# u_epoch_training_rate = 5000
+#here is w
+u_epoch_training = 5000
+u_epoch_training_rate = 300
+#here is test
+# u_epoch_training = 100
+# u_epoch_training_rate = 3
 minimum_uncertainty_buffer_training = u_batch_size
 u_training = True
-u_training_steps = [u_epoch_training_rate * i for i in range(num_episode * max_step_each_episode // u_epoch_training_rate)]
+u_training_steps = [u_epoch_training_rate * i for i in range(1, num_episode * max_step_each_episode // u_epoch_training_rate)]
 
 u_pretrained_u_network = None
 use_perfect_uncertainty = False
