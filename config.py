@@ -35,15 +35,8 @@ u_step_size = 0.001
 u_layers_type = []
 u_layers_features = []
 # u_epoch_training is the parameter E and u_epoch_training_rate is I
-#here is r
-# u_epoch_training = 300
-# u_epoch_training_rate = 5000
-#here is w
 u_epoch_training = 5000
 u_epoch_training_rate = 300
-#here is test
-# u_epoch_training = 100
-# u_epoch_training_rate = 3
 minimum_uncertainty_buffer_training = u_batch_size
 u_training = True
 u_training_steps = [u_epoch_training_rate * i for i in range(1, num_episode * max_step_each_episode // u_epoch_training_rate)]

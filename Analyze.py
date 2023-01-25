@@ -6,7 +6,7 @@ import numpy as np
 
 def plot_result(file_name, plot_name, is_offline, metric):
     plots_dir = "Plots/"
-    results_dir = "Results/"   
+    results_dir = "CombinedResults/"   
     fig_test, axs_test = plt.subplots(1, 1, constrained_layout=True)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15) 
@@ -58,7 +58,7 @@ def plot_result(file_name, plot_name, is_offline, metric):
 
 
 if __name__ == '__main__':
-
+    # todo: add smoothness
     parser = argparse.ArgumentParser()
     parser.add_argument('--scenario', type=str, required=True)
     parser.add_argument('--file_name', type=str, required=True)
