@@ -21,7 +21,7 @@ st_layers_features = [8]
 st_epoch_training = 10000
 st_epoch_training_rate = 500
 minimum_transition_buffer_training = st_batch_size
-st_training = True
+st_training = False
 
 
 # Below you can change the parameters of the uncertainty network. (from line 38 to 42)
@@ -38,7 +38,7 @@ u_layers_features = []
 u_epoch_training = 5000
 u_epoch_training_rate = 300
 minimum_uncertainty_buffer_training = u_batch_size
-u_training = True
+u_training = False
 
 u_pretrained_u_network = None
 use_perfect_uncertainty = False
