@@ -49,7 +49,7 @@ class SemiOnlineUAMCTSTwoWay(DynaAgent, MCTSAgent):
             self.load_buffer(config.pre_gathered_buffer)
 
         self.minimum_uncertainty_buffer_training = config.minimum_uncertainty_buffer_training
-        self.u_training_steps = config.u_training_steps
+        self.u_training_steps = [config.u_epoch_training_rate * i for i in range(1, config.num_episode * config.max_step_each_episode // config.u_epoch_training_rate)]        
         self.u_epoch_training = config.u_epoch_training
         self.use_perfect_uncertainty = config.use_perfect_uncertainty
         self.pre_trained_unetwork = params['uncertainty_pretrained']

@@ -38,7 +38,7 @@ class MCTSAgentTwoWayOnlineModel(DynaAgent, MCTSAgent):
         self.transition_buffer_size = 2 ** 12
 
         self.minimum_transition_buffer_training = config.minimum_transition_buffer_training
-        self.st_training_steps = config.st_training_steps
+        self.st_training_steps = [config.st_epoch_training_rate * i for i in range(1, config.num_episode * config.max_step_each_episode // config.st_epoch_training_rate)]
         self.st_epoch_training = config.st_epoch_training
 
         self._st = {'network':None,
