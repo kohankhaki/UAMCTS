@@ -3,7 +3,7 @@ selection_idea = 1
 backpropagate_idea = 1  
 expansion_idea = 2
 
-num_runs = 5
+num_runs = 25
 num_episode = 300
 max_step_each_episode = 50
 
@@ -38,7 +38,7 @@ u_layers_features = []
 u_epoch_training = 5000
 u_epoch_training_rate = 300
 minimum_uncertainty_buffer_training = u_batch_size
-u_training = False
+u_training = True
 
 u_pretrained_u_network = None
 use_perfect_uncertainty = False
@@ -49,6 +49,6 @@ experiment_detail = ""
 
 s_vf_list = [0.01]
 s_md_list = [0.1]
-model_corruption_list = [0]
+model_corruption_list = []
 model_list = [{'type': 'heter', 'layers_type': ['fc'], 'layers_features': [6], 'action_layer_num': 2}]
 trained_vf_list = [None]

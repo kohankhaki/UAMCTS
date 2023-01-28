@@ -27,10 +27,9 @@ if __name__ == '__main__':
 
     runs_dir = "Results/"
     runs_list = [
-        "UAMCTS_TwoWayW_Run0.p",
-        "UAMCTS_TwoWayW_Run1.p",
-        "UAMCTS_TwoWayW_Run2.p"
-    ]
+        "UAMCTS_TwoWayIcy_ParamStudy_Run0.p",
+        "UAMCTS_TwoWayIcy_ParamStudy_Run1.p"
+        ]
     result_dir = "CombinedResults/"
-    result_file_name = "UAMCTS_TwoWayW"
+    result_file_name = "UAMCTS_TwoWayIcy_ParamStudy"
     combine_experiment_result(runs_dir, runs_list, result_dir, result_file_name)
