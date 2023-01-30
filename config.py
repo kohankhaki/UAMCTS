@@ -18,8 +18,8 @@ st_step_size = 0.001
 st_layers_type = ['fc']
 st_layers_features = [8]
 # st_epoch_training is the parameter E and st_epoch_training_rate is I
-st_epoch_training = 10000
-st_epoch_training_rate = 500
+st_epoch_training = 5000
+st_epoch_training_rate = 300
 minimum_transition_buffer_training = st_batch_size
 st_training = False
 
@@ -49,6 +49,6 @@ experiment_detail = ""
 
 s_vf_list = [0.01]
 s_md_list = [0.1]
-model_corruption_list = []
+model_corruption_list = [""]
 model_list = [{'type': 'heter', 'layers_type': ['fc'], 'layers_features': [6], 'action_layer_num': 2}]
 trained_vf_list = [None]

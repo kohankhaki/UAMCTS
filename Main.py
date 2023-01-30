@@ -19,6 +19,7 @@ from Agents.SemiOnlineUAMCTS import *
 from Agents.SemiOnlineUAMCTSTwoWay import *
 from Agents.MCTSAgentTwoWayOnlineModel import *
 from Agents.DynaAgent import *
+from Agents.MCTSAgentTwoWayOnlineResidualModel import *
 
 
 if __name__ == '__main__':
@@ -39,6 +40,7 @@ if __name__ == '__main__':
     parser.add_argument('--c', type=float, default=2**0.5)
     parser.add_argument('--tau', type=float, default=0.1)
     parser.add_argument('--learn_transition', default=False, action="store_true")
+    parser.add_argument('--learn_residual', default=False, action="store_true")
     parser.add_argument('--use_true_model', default=False, action="store_true")
 
 
@@ -62,7 +64,7 @@ if __name__ == '__main__':
     config.num_runs = args.num_run
     config.num_episode = args.num_episode
 
-    if args.learn_transition:
+    if args.learn_transition or args.learn_residual:
         config.st_training = True
 
     if args.scenario == "offline":
@@ -80,6 +82,8 @@ if __name__ == '__main__':
     if args.env == "two_way" or args.env == "two_way_icy":
         if args.learn_transition:
             agent_class_list = [MCTSAgentTwoWayOnlineModel]
+        elif args.learn_residual:
+            agent_class_list = [MCTSAgentTwoWayOnlineResidualModel]
         else:
             agent_class_list = [SemiOnlineUAMCTSTwoWay]
     else:
