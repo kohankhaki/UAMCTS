@@ -239,9 +239,6 @@ class MCTSAgentTwoWayOnlineResidualModel(DynaAgent, MCTSAgent):
         reward = 0
         self.l = torch.tensor([[0.0, 0.0]], dtype=torch.float64)
         self.u = torch.tensor([[2.0, 6.0]], dtype=torch.float64)
-        # print(torch.min(predicted_next_state, self.u).dtype)
-        # print(torch.max(torch.min(predicted_next_state, self.u), self.l).dtype)
-        # exit(0)
         predicted_next_state = torch.max(torch.min(predicted_next_state, self.u), self.l)
         predicted_next_state = torch.round(predicted_next_state)
         predicted_next_state = predicted_next_state.type(torch.LongTensor)

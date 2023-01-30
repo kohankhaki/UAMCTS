@@ -66,9 +66,13 @@ python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIc
 #farnaz
 python3 Analyze.py --scenario online --file_name UAMCTS_TwoWayIcy_ParamStudy.p --plot_name UAMCTS_TwoWayIcyParamStudy --metric num_steps
 
-#test
-python3 Main.py --env two_way --scenario online --file_name "test" \
---selection --expansion --simulation \
---backpropagation --num_run 1 \
---num_episode 300 --ni 1 --ns 1 --ds 1 \
---c 1 --tau 10
+#Kiarash 5
+python3 Main.py --env two_way --scenario online --file_name "MCTS_Residual_H8_ParamStudy_Run0" \
+--num_run 5 \
+--num_episode 300 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 10 --learn_residual
+
+python3 Main.py --env two_way --scenario online --file_name "MCTS_Residual_H8_ParamStudy_Run1" \
+--num_run 5 \
+--num_episode 300 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 10 --learn_residual
