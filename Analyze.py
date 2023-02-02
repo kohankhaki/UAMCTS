@@ -7,7 +7,7 @@ import random
 
 def plot_result(file_name, plot_name, is_offline, metric):
     plots_dir = "Plots/"
-    results_dir = "CombinedResults/"   
+    results_dir = "Results/"   
     fig_test, axs_test = plt.subplots(1, 1, constrained_layout=True)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15) 
@@ -26,12 +26,15 @@ def plot_result(file_name, plot_name, is_offline, metric):
     def offline(metrics, agent_name, axs_test):
         metrics = np.array([np.mean(metrics, axis=0)])
 
-        metrics_avg = np.mean(metrics[0], axis=0)
-        metrics_std = np.std(metrics[0], axis=0)
-        axs_test.scatter(y=metrics_avg, x="Agent", color="#e0030c")
-        axs_test.axhline(metrics_avg, label="Agent", color="#e0030c", linestyle="--")
-        axs_test.errorbar(y=metrics_avg, x="Agent", yerr=metrics_std,
-                            ls='none', color="#e0030c", capsize=5)
+        metrics_avg = np.mean(metrics, axis=0)
+        metrics_std = np.std(metrics, axis=0)
+        number_of_colors = 8
+
+        color = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(number_of_colors)])
+        axs_test.scatter(y=metrics_avg, x="Agent", color=color)
+        axs_test.axhline(metrics_avg, label="Agent", color=color, linestyle="--")
+        # axs_test.errorbar(y=metrics_avg, x="Agent", yerr=metrics_std,
+        #                     ls='none', color=color, capsize=5)
     
     def online(metrics, agent_name, axs_test):
         print(metrics.shape)
@@ -43,7 +46,7 @@ def plot_result(file_name, plot_name, is_offline, metric):
         x = range(len(metrics_avg))
         number_of_colors = 8
 
-        color = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
+        color = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(number_of_colors)])
              
         axs_test.plot(x, metrics_avg, label=agent_name, color=color)
         axs_test.fill_between(x,

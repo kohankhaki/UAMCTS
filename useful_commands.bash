@@ -64,7 +64,7 @@ python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIc
 
 
 #farnaz
-python3 Analyze.py --scenario online --file_name UAMCTS_TwoWayIcy_ParamStudy.p --plot_name UAMCTS_TwoWayIcyParamStudy --metric num_steps
+python3 Analyze.py --scenario offline --file_name MCTS_TwoWayIcy_ParamStudy_Run0.p --plot_name test --metric num_steps
 
 #Kiarash 5
 python3 Main.py --env two_way --scenario online --file_name "MCTS_Residual_H8_ParamStudy_Run0" \
@@ -76,3 +76,40 @@ python3 Main.py --env two_way --scenario online --file_name "MCTS_Residual_H8_Pa
 --num_run 5 \
 --num_episode 300 --ni 10 --ns 10 --ds 30 \
 --c 1 --tau 10 --learn_residual
+
+#Kiarash 6
+python3 Main.py --env two_way_icy --scenario offline --file_name "MCTS_TwoWayIcyV2_ParamStudy_Run0" \
+--num_run 10 --num_episode 1 --ni 10 --ns 10 --ds 30 
+
+python3 Main.py --env two_way_icy --scenario offline --file_name "MCTS_TwoWayIcyV2_TrueModel_ParamStudy_Run0" \
+--num_run 10 --num_episode 1 --ni 10 --ns 10 --ds 30 --use_true_model
+
+python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcyV2_ParamStudy_Run0" \
+--selection --expansion --simulation \
+--backpropagation --num_run 2 \
+--num_episode 300 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 10
+
+python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcyV2_ParamStudy_Run1" \
+--selection --expansion --simulation \
+--backpropagation --num_run 2 \
+--num_episode 300 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 10
+
+python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcyV2_ParamStudy_Run2" \
+--selection --expansion --simulation \
+--backpropagation --num_run 2 \
+--num_episode 300 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 10
+
+python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcyV2_ParamStudy_Run3" \
+--selection --expansion --simulation \
+--backpropagation --num_run 2 \
+--num_episode 300 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 10
+
+python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcyV2_ParamStudy_Run4" \
+--selection --expansion --simulation \
+--backpropagation --num_run 2 \
+--num_episode 300 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 10
