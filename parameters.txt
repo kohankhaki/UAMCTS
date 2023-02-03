@@ -33,3 +33,11 @@ corrupt_env = GridWorld(params={'size': (3, 7), 'init_state': (1, 0), 'state_mod
                         'window_size': (255, 255),
                         'aging_reward': 0
                         })
+
+
+c:
+MCTS_TwoWayIcy_ParamStudy_Run0 and MCTS_TwoWayIcy_TrueModel_ParamStudy_Run0 is 2**-1
+UAMCTS_TwoWayIcy_ParamStudy_Run0 is 2**0s
+MCTS_TwoWayIcyV2_TrueModel_ParamStudy_Run0 2**-1 (0.5)
+MCTS_TwoWayIcyV2_ParamStudy_Run0 2**-1 (0.5)
+UAMCTS_TwoWayIcyV2_ParamStudy 2**0 (1)

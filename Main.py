@@ -93,9 +93,9 @@ if __name__ == '__main__':
     s_md_list = config.s_md_list
     model_corruption_list = config.model_corruption_list
     experiment_detail = config.experiment_detail
-
-    # c_list = [args.c]
-    c_list = [2**-1, 2**0, 2**0.5, 2**1]
+   
+    c_list = [args.c]
+    # c_list = [2**-1, 2**0, 2**0.5, 2**1]
     # c_list = [2**0.5]
 
     num_iteration_list = [args.ni] 

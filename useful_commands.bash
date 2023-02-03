@@ -64,7 +64,7 @@ python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIc
 
 
 #farnaz
-python3 Analyze.py --scenario offline --file_name MCTS_TwoWayIcy_ParamStudy_Run0.p --plot_name test --metric num_steps
+python3 Analyze.py --scenario offline --file_name MCTS_TwoWayIcy_TrueModel_ParamStudy_Run0.p --plot_name test --metric num_steps
 
 #Kiarash 5
 python3 Main.py --env two_way --scenario online --file_name "MCTS_Residual_H8_ParamStudy_Run0" \
@@ -111,5 +111,18 @@ python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIc
 python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcyV2_ParamStudy_Run4" \
 --selection --expansion --simulation \
 --backpropagation --num_run 2 \
+--num_episode 300 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 10
+
+#kiarash 7
+python3 Main.py --env two_way_icy --scenario offline --file_name "MCTS_TwoWayIcyV2" \
+--num_run 30 --num_episode 1 --ni 10 --ns 10 --ds 30 --c 0.5
+
+python3 Main.py --env two_way_icy --scenario offline --file_name "MCTS_TwoWayIcyV2_TrueModel" \
+--num_run 30 --num_episode 1 --ni 10 --ns 10 --ds 30 --c 0.5 --use_true_model
+
+python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcyV2" \
+--selection --expansion --simulation \
+--backpropagation --num_run 30 \
 --num_episode 300 --ni 10 --ns 10 --ds 30 \
 --c 1 --tau 10
