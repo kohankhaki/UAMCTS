@@ -121,8 +121,20 @@ python3 Main.py --env two_way_icy --scenario offline --file_name "MCTS_TwoWayIcy
 python3 Main.py --env two_way_icy --scenario offline --file_name "MCTS_TwoWayIcyV2_TrueModel" \
 --num_run 30 --num_episode 1 --ni 10 --ns 10 --ds 30 --c 0.5 --use_true_model
 
-python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcyV2" \
+python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcyV2_Run0" \
 --selection --expansion --simulation \
---backpropagation --num_run 30 \
+--backpropagation --num_run 10 \
+--num_episode 300 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 10
+
+python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcyV2_Run1" \
+--selection --expansion --simulation \
+--backpropagation --num_run 10 \
+--num_episode 300 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 10
+
+python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcyV2_Run2" \
+--selection --expansion --simulation \
+--backpropagation --num_run 10 \
 --num_episode 300 --ni 10 --ns 10 --ds 30 \
 --c 1 --tau 10
