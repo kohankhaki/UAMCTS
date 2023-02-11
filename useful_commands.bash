@@ -138,3 +138,22 @@ python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIc
 --backpropagation --num_run 10 \
 --num_episode 300 --ni 10 --ns 10 --ds 30 \
 --c 1 --tau 10
+
+#kiarash 8
+python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcy_Offline_tau0d1" \
+--selection --expansion --simulation \
+--backpropagation --num_run 30 \
+--num_episode 1 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 0.1
+
+python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcy_Offline_tau1" \
+--selection --expansion --simulation \
+--backpropagation --num_run 30 \
+--num_episode 1 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 1
+
+python3 Main.py --env two_way_icy --scenario online --file_name "UAMCTS_TwoWayIcy_Offline_tau10" \
+--selection --expansion --simulation \
+--backpropagation --num_run 30 \
+--num_episode 1 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 10

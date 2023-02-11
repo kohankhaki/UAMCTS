@@ -100,7 +100,7 @@ class RunExperiment():
                 env = GridWorld(params={'size': (3, 7), 'init_state': (1, 0), 'state_mode': 'coord',
                                       'obstacles_pos': [(1, 1),(1, 2), (1, 3), (1, 4), (1, 5),
                                                         (random_obstacle_y, random_obstacle_x)],
-                                      'icy_pos': [(2, 2)],
+                                      'icy_pos': [(2, 3)],
                                       'rewards_pos': [(1, 6)], 'rewards_value': [10],
                                       'terminals_pos': [(1, 6)], 'termination_probs': [1],
                                       'actions': [(0, 1), (1, 0), (0, -1), (-1, 0)],
