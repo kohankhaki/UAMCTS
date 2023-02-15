@@ -33,7 +33,7 @@ if __name__ == "__main__":
     actions = env.getAllActions()
     print(actions)
 
-    for a in range(10000):
+    for a in range(1):
         action = np.random.choice(actions)
         reward, observation1, is_terminal1 = env.step(action)
 

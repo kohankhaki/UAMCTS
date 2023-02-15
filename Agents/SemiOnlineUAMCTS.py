@@ -234,9 +234,9 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
     def get_onehot_state(self, state):
         if self.env == "space_invaders":
             state_copy = torch.clone(state)
-            state_copy = state_copy.int()
-            prev_state_pos_onehot = self.getOnehotTorch(torch.tensor([state_copy[0][-6]], dtype=int).unsqueeze(0), 10)
-            prev_state_shottimer_onehot = self.getOnehotTorch(torch.tensor([state_copy[0][-1]], dtype=int).unsqueeze(0), 5)
+            state_copy = state_copy.float()
+            prev_state_pos_onehot = self.getOnehotTorch(torch.tensor([state_copy[0][-6]], dtype=int).unsqueeze(0), 10).float()
+            prev_state_shottimer_onehot = self.getOnehotTorch(torch.tensor([state_copy[0][-1]], dtype=int).unsqueeze(0), 5).float()
             one_hot_prev_state = torch.cat((state_copy[0][0:-6], state_copy[0][-5:-1])).unsqueeze(0)
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_pos_onehot), dim=1)
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_shottimer_onehot), dim=1)
@@ -261,13 +261,13 @@ class SemiOnlineUAMCTS(DynaAgent, MCTSAgent):
 
         elif self.env == "breakout":
             state_copy = torch.clone(state)
-            state_copy = state_copy.int()
-            prev_state_ball_y = self.getOnehotTorch(torch.tensor([state_copy[0][0]], dtype=int).unsqueeze(0), 10)
-            prev_state_ball_x = self.getOnehotTorch(torch.tensor([state_copy[0][1]], dtype=int).unsqueeze(0), 10)
-            prev_state_ball_dir = self.getOnehotTorch(torch.tensor([state_copy[0][2]], dtype=int).unsqueeze(0), 4)
-            prev_state_last_x = self.getOnehotTorch(torch.tensor([state_copy[0][5]], dtype=int).unsqueeze(0), 10)
-            prev_state_last_y = self.getOnehotTorch(torch.tensor([state_copy[0][6]], dtype=int).unsqueeze(0), 10)
-            prev_state_pos = self.getOnehotTorch(torch.tensor([state_copy[0][3]], dtype=int).unsqueeze(0), 10)
+            state_copy = state_copy.float()
+            prev_state_ball_y = self.getOnehotTorch(torch.tensor([state_copy[0][0]], dtype=int).unsqueeze(0), 10).float()
+            prev_state_ball_x = self.getOnehotTorch(torch.tensor([state_copy[0][1]], dtype=int).unsqueeze(0), 10).float()
+            prev_state_ball_dir = self.getOnehotTorch(torch.tensor([state_copy[0][2]], dtype=int).unsqueeze(0), 4).float()
+            prev_state_last_x = self.getOnehotTorch(torch.tensor([state_copy[0][5]], dtype=int).unsqueeze(0), 10).float()
+            prev_state_last_y = self.getOnehotTorch(torch.tensor([state_copy[0][6]], dtype=int).unsqueeze(0), 10).float()
+            prev_state_pos = self.getOnehotTorch(torch.tensor([state_copy[0][3]], dtype=int).unsqueeze(0), 10).float()
 
             one_hot_prev_state = torch.cat((state_copy[0][4].unsqueeze(0), state_copy[0][7:])).unsqueeze(0)
             one_hot_prev_state = torch.cat((one_hot_prev_state, prev_state_ball_y), dim=1)

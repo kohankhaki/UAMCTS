@@ -94,13 +94,10 @@ if __name__ == '__main__':
     model_corruption_list = config.model_corruption_list
     experiment_detail = config.experiment_detail
    
-    c_list = [args.c]
-    # c_list = [2**-1, 2**0, 2**0.5, 2**1]
-    # c_list = [2**0.5]
-
     num_iteration_list = [args.ni] 
     simulation_depth_list = [args.ds]
     num_simulation_list = [args.ns]
+    c_list = [args.c]
     tau_list = [args.tau]
     
     model_list = config.model_list

@@ -3,7 +3,7 @@ selection_idea = 1
 backpropagate_idea = 1  
 expansion_idea = 2
 
-num_runs = 25
+num_runs = 30
 num_episode = 300
 max_step_each_episode = 50
 

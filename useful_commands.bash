@@ -1,5 +1,5 @@
 # Kiarash
-python3 Main.py --env two_way --scenario online --file_name "UAMCTS_TwoWayW_Run0" \
+python3 Main.py --env freeway --scenario online --file_name "UAMCTS_TwoWayW_Run0" \
 --selection --expansion --simulation \
 --backpropagation --num_run 5 \
 --num_episode 300 --ni 10 --ns 10 --ds 30 \
@@ -155,5 +155,32 @@ python3 Main.py --env two_way_icy --scenario offline --file_name "UAMCTS_TwoWayI
 python3 Main.py --env two_way_icy --scenario offline --file_name "UAMCTS_TwoWayIcy_Offline_tau10" \
 --selection --expansion --simulation \
 --backpropagation --num_run 30 \
+--num_episode 1 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 10
+
+
+#farnaz
+python3 Main.py --env two_way_icy --scenario offline --file_name "UAMCTS_TwoWayIcy_Offline_tau0d1_ParamStudy" \
+--selection --expansion --simulation \
+--backpropagation --num_run 30 \
+--num_episode 1 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 0.1
+
+python3 Main.py --env two_way_icy --scenario offline --file_name "UAMCTS_TwoWayIcy_Offline_tau1_ParamStudy" \
+--selection --expansion --simulation \
+--backpropagation --num_run 30 \
+--num_episode 1 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 1
+
+python3 Main.py --env two_way_icy --scenario offline --file_name "UAMCTS_TwoWayIcy_Offline_tau10_ParamStudy" \
+--selection --expansion --simulation \
+--backpropagation --num_run 30 \
+--num_episode 1 --ni 10 --ns 10 --ds 30 \
+--c 1 --tau 10
+
+#last farnaz
+python3 Main.py --env two_way_icy --scenario offline --file_name "UAMCTS_TwoWayIcy_Offline" \
+--selection --expansion --simulation \
+--backpropagation --num_run 100 \
 --num_episode 1 --ni 10 --ns 10 --ds 30 \
 --c 1 --tau 10

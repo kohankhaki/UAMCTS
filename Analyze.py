@@ -4,6 +4,16 @@ import pickle
 import numpy as np
 import random
 
+colors = ["#06da87", "#e0030c", "#256fba"]
+color_index = 0
+
+def generate_color():
+    global color_index
+    color = colors[color_index]
+    color_index = (color_index + 1) % len(colors)
+    return color
+
+
 
 def plot_result(file_name, agent_name, is_offline, metric, axs_test, index=0):
     results_dir = "CombinedResults/"
@@ -25,15 +35,15 @@ def plot_result(file_name, agent_name, is_offline, metric, axs_test, index=0):
 
     def offline(metrics, agent_name, axs_test):
         print(metrics.shape)
-        # metrics = np.array([np.mean(metrics, axis=1)])
-        print(metrics.shape)
-        # metrics_avg = np.mean(metrics, axis=1)
-        # metrics_std = np.std(metrics, axis=1)        
         metrics_avg = np.mean(metrics)
         metrics_std = np.std(metrics)
-        number_of_colors = 8
 
-        color = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(number_of_colors)])
+
+        # number_of_colors = 8
+
+        # color = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(number_of_colors)])
+        
+        color = generate_color()
         axs_test.scatter(y=metrics_avg, x=agent_name, color=color)
         axs_test.axhline(metrics_avg, label=agent_name, color=color, linestyle="--")
         axs_test.errorbar(y=metrics_avg, x=agent_name, yerr=metrics_std,
@@ -76,13 +86,14 @@ if __name__ == '__main__':
 
 
     plots_dir = "Plots/"
-    plot_name = "twowayicy_test"   
+    plot_name = "twowayicy"   
     fig_test, axs_test = plt.subplots(1, 1, constrained_layout=True)
-    plot_result("MCTS_TwoWayIcy_TrueModel.p", "T", True, "num_steps", axs_test)
-    plot_result("MCTS_TwoWayIcy.p", "C", True, "num_steps", axs_test)
-    plot_result("UAMCTS_TwoWayIcy.p", "UAMCTS", False, "num_steps", axs_test)
+    plot_result("MCTS_TwoWayIcy_TrueModel.p", ["T"], True, "num_steps", axs_test)
+    plot_result("MCTS_TwoWayIcy.p", ["C"], True, "num_steps", axs_test)
+    plot_result("UAMCTS_TwoWayIcy_Offline.p", ["UAMCTS"], True, "num_steps", axs_test)
     axs_test.legend()
     fig_test.savefig(plots_dir + plot_name + ".png", format="png")
+    fig_test.savefig(plots_dir + plot_name + ".svg", format="svg")
 
 
     # plots_dir = "Plots/"
@@ -95,7 +106,14 @@ if __name__ == '__main__':
     # fig_test.savefig(plots_dir + plot_name + ".png", format="png")
     # fig_test.savefig(plots_dir + plot_name + ".svg", format="svg")
 
-
+    # plots_dir = "Plots/"
+    # plot_name = "twowayicyparam2"   
+    # fig_test, axs_test = plt.subplots(1, 1, constrained_layout=True)
+    # for i in range(4):
+    #     plot_result("UAMCTS_TwoWayIcy_Offline_tau10_ParamStudy.p", [str(i)], True, "num_steps", axs_test, index=i)
+    # axs_test.legend()
+    # fig_test.savefig(plots_dir + plot_name + ".png", format="png")
+    # fig_test.savefig(plots_dir + plot_name + ".svg", format="svg")
 
     # plots_dir = "Plots/"
     # plot_name = "test"   
